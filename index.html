@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YallaY</title>
+    <link rel="icon" href="YallaYIcon.png" type="image/png">
+    <style>
+        body {
+            font-family: 'Orbitron', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(45deg, #121212, #ff4040, #ff9900);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: white;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .light-mode { background: white; color: black; }
+        .yalla-orange { background: #300; color: #ff9900; }
+        .preview_1, .preview_2 {
+            max-width: 100%;
+            height: auto;
+            width: 300px;
+            display: block;
+            margin: 10px auto;
+        }
+        
+        header {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 0 20px #ff4040;
+        }
+        
+        header img {
+            height: 90px;
+            margin-left: 10px;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        header img:hover { transform: scale(1.1); box-shadow: 0 0 15px #ff4040; }
+        
+        header h1 { margin: 0; flex-grow: 1; text-align: left; padding-left: 20px; }
+        
+        .search-bar {
+            padding: 10px;
+            border-radius: 5px;
+            border: 2px solid #ff4040;
+            font-size: 14px;
+            width: 200px;
+            background: #222;
+            color: white;
+        }
+        
+        .button {
+            padding: 12px 24px;
+            border: none;
+            cursor: pointer;
+            background: #ff4040;
+            color: white;
+            transition: all 0.3s;
+            border-radius: 8px;
+            font-size: 16px;
+            margin: 10px;
+            box-shadow: 0 0 10px #ff4040;
+        }
+        
+        .button:hover {
+            background: #cc3333;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #ff4040;
+        }
+
+        .container {
+            max-width: 550px;
+            margin: 20px auto;
+            padding: 20px;
+            background: rgba(51, 51, 51, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 0 25px rgba(255, 64, 64, 0.7);
+            transition: transform 0.3s;
+        }
+
+        .container:hover { transform: translateY(-5px); }
+
+        .input-field {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            border: 2px solid #ff4040;
+            font-size: 14px;
+            background: #222;
+            color: white;
+        }
+
+        .hidden { display: none; }
+
+        #leaderboard, #projects, #chat, #updates, #blog, #contact, #owner-tools {
+            margin: 20px auto;
+            max-width: 550px;
+            padding: 10px;
+            background: rgba(34, 34, 34, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 0 15px #ff4040;
+        }
+
+        .achievement {
+            background: #444;
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border: 1px solid #ff4040;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 5px #ff4040; }
+            50% { box-shadow: 0 0 15px #ff4040; }
+            100% { box-shadow: 0 0 5px #ff4040; }
+        }
+
+        #chat-box {
+            height: 150px;
+            overflow-y: scroll;
+            background: #111;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .project-card {
+            background: #333;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 2px solid #ff4040;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .project-card:hover { 
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #ff4040;
+        }
+
+        .blog-post {
+            background: #333;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 2px solid #ff9900;
+            transition: transform 0.3s;
+        }
+        .blog-post:hover { transform: scale(1.05); }
+
+        .cursor {
+            width: 40px;
+            height: 40px;
+            background: url('YallaYIcon.png') no-repeat center;
+            background-size: contain;
+            position: absolute;
+            pointer-events: none;
+            transition: transform 0.1s;
+            z-index: 9999;
+        }
+        .cursor.hover {
+            transform: scale(1.5);
+        }
+
+        #music-player {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #333;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 15px #ff4040;
+            transition: all 0.3s;
+        }
+        #music-player:hover { transform: translateY(-5px); }
+        #music-toggle {
+            background: #ff4040;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            color: white;
+            transition: background 0.3s;
+        }
+        #music-toggle:hover { background: #cc3333; }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="cursor" id="cursor"></div>
+
+    <header>
+        <div>
+            <img src="YallaYIcon.png" alt="YallaY Icon" onclick="showPage('home')">
+            <h1>YallaY</h1>
+        </div>
+        <input type="text" class="search-bar" id="search-bar" placeholder="Search projects or players..." onkeyup="searchProjectsAndPlayers()">
+    </header>
+    
+    <main id="content">
+        <section id="home">
+            <h2>Welcome to YallaY’s World!</h2>
+            <button class="button" id="login-btn" onclick="playSound('click'); showPage('login-form')">Login</button>
+            <button class="button" id="register-btn" onclick="playSound('click'); showPage('register-form')">Register</button>
+            <button class="button hidden" id="profile-btn" onclick="playSound('click'); showPage('profile')">Profile</button>
+            <button class="button" id="projects-btn" onclick="playSound('click'); showPage('projects')">Projects</button>
+            <button class="button" id="blog-btn" onclick="playSound('click'); showPage('blog')">Blog</button>
+            <button class="button" id="contact-btn" onclick="playSound('click'); showPage('contact')">Contact</button>
+            <button class="button" id="settings-btn" onclick="playSound('click'); showPage('settings')">Settings</button>
+            <button class="button hidden" id="owner-tools-btn" onclick="playSound('click'); showPage('owner-tools')">Owner Tools</button>
+            <button class="button hidden" id="logout-btn" onclick="logout()">Logout</button>
+        </section>
+        
+        <div id="login-form" class="container hidden">
+            <h2>Login</h2>
+            <input type="text" id="login-username" class="input-field" placeholder="Username">
+            <input type="password" id="login-password" class="input-field" placeholder="Password">
+            <button class="button" onclick="login()">Login</button>
+            <button class="button" onclick="showPage('home')">Back</button>
+        </div>
+
+        <div id="register-form" class="container hidden">
+            <h2>Register</h2>
+            <input type="text" id="reg-username" class="input-field" placeholder="Username">
+            <input type="password" id="reg-password" class="input-field" placeholder="Password">
+            <button class="button" onclick="register()">Register</button>
+            <button class="button" onclick="showPage('home')">Back</button>
+        </div>
+
+        <div id="profile" class="container hidden">
+            <h2>Profile</h2>
+            <p>Welcome, <span id="user-name">User</span>!</p>
+            <p>Projects Created: <span id="projects-created">0</span></p>
+            <p>Blog Posts Written: <span id="blog-posts">0</span></p>
+            <div id="achievements"></div>
+            <button class="button" onclick="fetchRealStats()">Refresh Stats</button>
+            <button class="button" onclick="logout()">Logout</button>
+        </div>
+
+        <div id="settings" class="container hidden">
+            <h2>Settings</h2>
+            <button class="button" onclick="setTheme('dark')">Dark Mode</button>
+            <button class="button" onclick="setTheme('light')">Light Mode</button>
+            <button class="button" onclick="setTheme('yalla-orange')">Yalla Orange</button>
+            <button class="button" onclick="showPage('home')">Back</button>
+        </div>
+
+        <div id="projects" class="container hidden">
+            <h2>My Projects</h2>
+            <div id="project-list">
+                <div class="project-card">
+                    <h3>Laser Tag</h3>
+                    <p>An roblox game i made but also there is an website!</p>
+                    <button class="button" onclick="showProjectPreview('Project 1')">Preview</button>
+                </div>
+                <div class="project-card">
+                    <h3>SparkAt</h3>
+                    <p>A blazing-fast AI chat igniting creativity and conversation!</p>
+                    <button class="button" onclick="showProjectPreview('Project 2')">Preview</button>
+                </div>
+            </div>
+            <button class="button" onclick="showPage('home')">Back</button>
+        </div>
+
+        <div id="blog" class="container hidden">
+            <h2>YallaY’s Blog</h2>
+            <div id="blog-posts-list">
+                <div class="blog-post">
+                    <h3>My Journey as YallaY</h3>
+                    <p>Started creating amazing projects—stay tuned for more updates!</p>
+                </div>
+                <div class="blog-post">
+                    <h3>Future Ideas</h3>
+                    <p>Thinking about a new game or app—let me know what you think!</p>
+                </div>
+            </div>
+            <button class="button" onclick="showPage('home')">Back</button>
+        </div>
+
+        <div id="contact" class="container hidden">
+            <h2>Contact YallaY</h2>
+            <p>Email: halaldeveloper@yallay.com</p>
+            <p>Socials: @YallaY on Twitter/X</p>
+            <input type="text" id="contact-message" class="input-field" placeholder="Leave a message...">
+            <button class="button" onclick="sendContactMessage()">Send</button>
+            <button class="button" onclick="showPage('home')">Back</button>
+        </div>
+
+        <div id="leaderboard" class="hidden">
+            <h3>Top Creators</h3>
+            <p>Top Creator: <span id="top-creator">N/A</span> - <span id="top-projects">0</span> Projects</p>
+        </div>
+
+        <div id="chat" class="hidden">
+            <h3>YallaY Chat</h3>
+            <div id="chat-box"></div>
+            <input type="text" id="chat-input" class="input-field" placeholder="Type a message...">
+            <button class="button" onclick="sendChat()">Send</button>
+        </div>
+
+        <div id="updates" class="hidden">
+            <h3>Recent Updates</h3>
+            <div id="update-list">
+                <p>Feb 24, 2025: Launched the YallaY website—check it out!</p>
+                <p>Feb 20, 2025: Added new blog posts and project previews!</p>
+            </div>
+        </div>
+
+        <div id="project-preview" class="container hidden">
+            <h2>Project Preview</h2>
+            <p id="preview-content">Click a project to see more details here!</p>
+            <button class="button" onclick="hideProjectPreview()">Back</button>
+        </div>
+
+        <div id="owner-tools" class="container hidden">
+            <h2>Owner Tools</h2>
+            <input type="text" id="ban-username" class="input-field" placeholder="Username to ban">
+            <button class="button" onclick="banUser()">Ban User</button>
+            <input type="text" id="unban-username" class="input-field" placeholder="Username to unban">
+            <button class="button" onclick="unbanUser()">Unban User</button>
+            <button class="button" onclick="showPage('home')">Back</button>
+        </div>
+    </main>
+    
+    <audio id="click-sound" src="https://www.myinstants.com/media/sounds/button-click.mp3" preload="auto"></audio>
+    <audio id="fanfare-sound" src="https://www.myinstants.com/media/sounds/fanfare.mp3" preload="auto"></audio>
+    
+    <div id="music-player">
+        <audio id="background-music" loop>
+            <source src="wedding_song.mp3" type="audio/mpeg">
+            Your browser does not support the audio element.
+        </audio>
+        <button id="music-toggle">Play Music</button>
+    </div>
+
+    <script>
+        let isLoggedIn = localStorage.getItem('isLoggedIn') === 'true' || false;
+        let currentUser = localStorage.getItem('currentUser') || null;
+        let userData = JSON.parse(localStorage.getItem('userData')) || {};
+        let currentTheme = localStorage.getItem('userTheme') || 'dark';
+        const ownerUsername = "Halaldeveloper"; // Define the owner
+
+        // Custom Cursor
+        const cursor = document.getElementById('cursor');
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.pageX - 20 + 'px';
+            cursor.style.top = e.pageY - 20 + 'px';
+        });
+        document.querySelectorAll('a, button').forEach(item => {
+            item.addEventListener('mouseover', () => cursor.classList.add('hover'));
+            item.addEventListener('mouseout', () => cursor.classList.remove('hover'));
+        });
+
+        window.onload = () => {
+            const ambientSound = new Audio('https://www.myinstants.com/media/sounds/sci-fi-ambience.mp3');
+            ambientSound.loop = true;
+            ambientSound.play();
+            applySavedSettings();
+            if (isLoggedIn && currentUser) {
+                document.getElementById("user-name").innerText = currentUser;
+                updateUI();
+                updateProfile(currentUser);
+            }
+        };
+
+        function showPage(page) {
+            document.querySelectorAll("main section, .container").forEach(section => {
+                section.classList.add("hidden");
+            });
+            document.getElementById(page).classList.remove("hidden");
+            if (isLoggedIn && page === 'home') {
+                document.getElementById('leaderboard').classList.remove('hidden');
+                document.getElementById('chat').classList.remove('hidden');
+                document.getElementById('updates').classList.remove('hidden');
+            } else {
+                document.getElementById('chat').classList.add('hidden');
+                document.getElementById('updates').classList.add('hidden');
+            }
+        }
+
+        function login() {
+            const username = document.getElementById("login-username").value;
+            const password = document.getElementById("login-password").value;
+            if (username === ownerUsername && password === "HOOKfor9") {
+                playSound('fanfare');
+                alert("Login successful as owner!");
+                document.getElementById("user-name").innerText = username;
+                isLoggedIn = true;
+                currentUser = username;
+                saveLoginState();
+                updateUI();
+                updateProfile(username);
+                showPage('home');
+                return;
+            }
+            if (userData[username] && userData[username].password === password) {
+                if (userData[username].isBanned) {
+                    alert("You are banned and cannot log in.");
+                    return;
+                }
+                playSound('fanfare');
+                alert("Login successful!");
+                document.getElementById("user-name").innerText = username;
+                isLoggedIn = true;
+                currentUser = username;
+                saveLoginState();
+                updateUI();
+                updateProfile(username);
+                showPage('home');
+            } else {
+                alert("Invalid username or password.");
+            }
+        }
+
+        function register() {
+            const username = document.getElementById("reg-username").value;
+            const password = document.getElementById("reg-password").value;
+            if (username && password) {
+                if (userData[username] || username === ownerUsername) {
+                    alert("Username already taken or reserved!");
+                } else {
+                    userData[username] = { password, projectsCreated: 0, blogPosts: 0, history: [], isBanned: false };
+                    localStorage.setItem('userData', JSON.stringify(userData));
+                    playSound('fanfare');
+                    alert("Registration successful! Please login.");
+                    showPage('login-form');
+                }
+            } else {
+                alert("Please enter a username and password.");
+            }
+        }
+
+        function logout() {
+            isLoggedIn = false;
+            currentUser = null;
+            playSound('click');
+            alert("You have been logged out.");
+            saveLoginState();
+            updateUI();
+            showPage('home');
+        }
+
+        function updateUI() {
+            document.getElementById("login-btn").classList.toggle("hidden", isLoggedIn);
+            document.getElementById("register-btn").classList.toggle("hidden", isLoggedIn);
+            document.getElementById("profile-btn").classList.toggle("hidden", !isLoggedIn);
+            document.getElementById("projects-btn").classList.toggle("hidden", !isLoggedIn);
+            document.getElementById("blog-btn").classList.toggle("hidden", !isLoggedIn);
+            document.getElementById("contact-btn").classList.toggle("hidden", !isLoggedIn);
+            document.getElementById("settings-btn").classList.toggle("hidden", !isLoggedIn);
+            document.getElementById("logout-btn").classList.toggle("hidden", !isLoggedIn);
+            document.getElementById("owner-tools-btn").classList.toggle("hidden", !(isLoggedIn && currentUser === ownerUsername));
+        }
+
+        function updateProfile(username) {
+            document.getElementById("projects-created").innerText = userData[username].projectsCreated || 0;
+            document.getElementById("blog-posts").innerText = userData[username].blogPosts || 0;
+            updateLeaderboard();
+            updateAchievements(username);
+            updateUpdates(username);
+        }
+
+        function updateAchievements(username) {
+            const achievementsDiv = document.getElementById("achievements");
+            achievementsDiv.innerHTML = "";
+            const projects = userData[username].projectsCreated;
+            const blogPosts = userData[username].blogPosts;
+            if (projects >= 3) achievementsDiv.innerHTML += '<div class="achievement">🏆 Creator: 3+ Projects</div>';
+            if (projects >= 5) achievementsDiv.innerHTML += '<div class="achievement">🔥 Mastermind: 5+ Projects</div>';
+            if (blogPosts >= 3) achievementsDiv.innerHTML += '<div class="achievement">📝 Blogger: 3+ Posts</div>';
+            if (blogPosts >= 5) achievementsDiv.innerHTML += '<div class="achievement">🌟 Storyteller: 5+ Posts</div>';
+            if (achievementsDiv.innerHTML) playSound('fanfare');
+        }
+
+        function setTheme(theme) {
+            document.body.className = '';
+            if (theme !== 'dark') document.body.classList.add(theme);
+            currentTheme = theme;
+            playSound('click');
+            saveSettings();
+        }
+
+        function playSound(type) {
+            const sound = document.getElementById(type === 'click' ? 'click-sound' : 'fanfare-sound');
+            sound.currentTime = 0;
+            sound.play();
+        }
+
+        function updateLeaderboard() {
+            let topCreator = "N/A";
+            let topProjects = 0;
+            for (let user in userData) {
+                if (userData[user].projectsCreated > topProjects) {
+                    topProjects = userData[user].projectsCreated;
+                    topCreator = user;
+                }
+            }
+            document.getElementById("top-creator").innerText = topCreator;
+            document.getElementById("top-projects").innerText = topProjects;
+        }
+
+        function searchProjectsAndPlayers() {
+            const query = document.getElementById("search-bar").value.toLowerCase();
+            if (query && isLoggedIn) {
+                const projects = document.querySelectorAll('.project-card');
+                projects.forEach(project => {
+                    const title = project.querySelector('h3').innerText.toLowerCase();
+                    project.classList.toggle('hidden', !title.includes(query));
+                });
+                // Search players and display results
+                const playerResults = Object.keys(userData).filter(username => 
+                    username.toLowerCase().includes(query) && username !== currentUser
+                );
+                const projectList = document.getElementById("project-list");
+                const existingResults = document.getElementById("player-search-results");
+                if (existingResults) existingResults.remove();
+                if (playerResults.length > 0) {
+                    const resultsDiv = document.createElement("div");
+                    resultsDiv.id = "player-search-results";
+                    resultsDiv.innerHTML = "<h3>Players Found</h3>" + playerResults.map(user => 
+                        `<div class="project-card"><h3>${user}</h3><p>Projects: ${userData[user].projectsCreated}</p></div>`
+                    ).join('');
+                    projectList.appendChild(resultsDiv);
+                }
+            }
+        }
+
+        function sendChat() {
+            const message = document.getElementById("chat-input").value;
+            if (message && isLoggedIn) {
+                const username = document.getElementById("user-name").innerText;
+                document.getElementById("chat-box").innerHTML += `<p><b>${username}:</b> ${message}</p>`;
+                document.getElementById("chat-input").value = "";
+                playSound('click');
+            }
+        }
+
+        function updateUpdates(username) {
+            const updateList = document.getElementById("update-list");
+            updateList.innerHTML = userData[username].history.map(update => `<p>${update}</p>`).join('');
+            if (userData[username].history.length > 0) playSound('fanfare');
+        }
+
+        function fetchRealStats() {
+            const username = document.getElementById("user-name").innerText;
+            const simulatedStats = { projectsCreated: Math.floor(Math.random() * 10), blogPosts: Math.floor(Math.random() * 5) };
+            userData[username].projectsCreated = simulatedStats.projectsCreated;
+            userData[username].blogPosts = simulatedStats.blogPosts;
+            userData[username].history.push(`Updated stats on ${new Date().toLocaleString()}`);
+            localStorage.setItem('userData', JSON.stringify(userData));
+            updateProfile(username);
+            playSound('fanfare');
+            alert("Stats refreshed! (Simulated)");
+        }
+
+        function showProjectPreview(projectName) {
+            const previewContent = document.getElementById("preview-content");
+            if (projectName === "Project 1") {
+                previewContent.innerHTML = `<p>Laser Tag Preview</p><img src="Preview_1.png" class="preview_1" alt="Project 1 Preview">`;
+            } else if (projectName === "Project 2") {
+                previewContent.innerHTML = `<p>SparkAt Preview: Meet SparkAt, a next-gen AI chat that ignites your imagination with lightning-fast responses and a fiery passion for conversation!</p><img src="Preview_2.png" class="preview_2" alt="Project 2 Preview">`;
+            }
+            showPage('project-preview');
+        }
+
+        function hideProjectPreview() {
+            document.getElementById("preview-content").innerHTML = "Click a project to see more details here!";
+            showPage('projects');
+        }
+
+        function sendContactMessage() {
+            const message = document.getElementById("contact-message").value;
+            if (message && isLoggedIn) {
+                playSound('fanfare');
+                alert("Message sent to YallaY! (Simulated)");
+                document.getElementById("contact-message").value = "";
+            } else {
+                alert("Please log in and enter a message.");
+            }
+        }
+
+        // Owner Tools
+        function banUser() {
+            if (currentUser !== ownerUsername) {
+                alert("Only the owner can ban users.");
+                return;
+            }
+            const username = document.getElementById("ban-username").value;
+            if (username && userData[username] && username !== ownerUsername) {
+                userData[username].isBanned = true;
+                localStorage.setItem('userData', JSON.stringify(userData));
+                playSound('fanfare');
+                alert(`${username} has been banned!`);
+                document.getElementById("ban-username").value = "";
+            } else {
+                alert("Invalid username or cannot ban the owner.");
+            }
+        }
+
+        function unbanUser() {
+            if (currentUser !== ownerUsername) {
+                alert("Only the owner can unban users.");
+                return;
+            }
+            const username = document.getElementById("unban-username").value;
+            if (username && userData[username]) {
+                userData[username].isBanned = false;
+                localStorage.setItem('userData', JSON.stringify(userData));
+                playSound('fanfare');
+                alert(`${username} has been unbanned!`);
+                document.getElementById("unban-username").value = "";
+            } else {
+                alert("Invalid username.");
+            }
+        }
+
+        // Music Player
+        const music = document.getElementById('background-music');
+        const musicToggle = document.getElementById('music-toggle');
+        let isPlaying = false;
+
+        musicToggle.addEventListener('click', () => {
+            if (isPlaying) {
+                music.pause();
+                musicToggle.textContent = 'Play Music';
+            } else {
+                music.play();
+                musicToggle.textContent = 'Pause Music';
+            }
+            isPlaying = !isPlaying;
+        });
+
+        // Persistent Settings and Login
+        function saveSettings() {
+            localStorage.setItem('userTheme', currentTheme);
+        }
+
+        function saveLoginState() {
+            localStorage.setItem('isLoggedIn', isLoggedIn);
+            localStorage.setItem('currentUser', currentUser);
+            saveSettings();
+        }
+
+        function applySavedSettings() {
+            const savedTheme = localStorage.getItem('userTheme');
+            if (savedTheme) {
+                document.body.className = '';
+                if (savedTheme !== 'dark') document.body.classList.add(savedTheme);
+                currentTheme = savedTheme;
+            }
+        }
+
+        window.addEventListener('beforeunload', () => {
+            saveLoginState();
+        });
+    </script>
+</body>
+</html>
