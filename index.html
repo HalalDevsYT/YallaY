@@ -83,7 +83,7 @@
             transform: scale(1.05);
             box-shadow: 0 0 20px #ff4040;
         }
-        .button:focus { outline: 2px solid #ff9900; } /* Accessibility */
+        .button:focus { outline: 2px solid #ff9900; }
 
         .container {
             max-width: 550px;
@@ -201,7 +201,6 @@
         }
         #music-toggle:hover { background: #cc3333; }
 
-        /* New Styles */
         .comments { margin-top: 10px; }
         .comment-list p { font-size: 12px; margin: 5px 0; }
         #particles-js { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
@@ -251,7 +250,6 @@
             <button class="button" onclick="showPage('home')">Back</button>
         </div>
 
-        <!-- Feature 1: Enhanced User Profiles -->
         <div id="profile" class="container hidden">
             <h2>Profile</h2>
             <p>Welcome, <span id="user-name">User</span>!</p>
@@ -277,7 +275,6 @@
             <button class="button" onclick="showPage('home')">Back</button>
         </div>
 
-        <!-- Feature 2: Project Creation & Collaboration -->
         <div id="projects" class="container hidden">
             <h2>My Projects</h2>
             <div id="project-list">
@@ -305,7 +302,6 @@
             <button class="button" onclick="showPage('projects')">Cancel</button>
         </div>
 
-        <!-- Feature 4: Blog Enhancements -->
         <div id="blog" class="container hidden">
             <h2>YallaY’s Blog</h2>
             <div id="blog-posts-list">
@@ -345,7 +341,6 @@
             <p>Top Creator: <span id="top-creator">N/A</span> - <span id="top-projects">0</span> Projects</p>
         </div>
 
-        <!-- Feature 3: Interactive Chat Upgrades -->
         <div id="chat" class="hidden">
             <h3>YallaY Chat</h3>
             <div id="chat-box"></div>
@@ -367,7 +362,6 @@
             <button class="button" onclick="hideProjectPreview()">Back</button>
         </div>
 
-        <!-- Feature 10: Owner Tools Expansion -->
         <div id="owner-tools" class="container hidden">
             <h2>Owner Tools</h2>
             <input type="text" id="ban-username" class="input-field" placeholder="Username to ban">
@@ -385,7 +379,6 @@
     <audio id="click-sound" src="https://www.myinstants.com/media/sounds/button-click.mp3" preload="auto"></audio>
     <audio id="fanfare-sound" src="https://www.myinstants.com/media/sounds/fanfare.mp3" preload="auto"></audio>
     
-    <!-- Feature 5: Visual & Audio Flair - Music Player -->
     <div id="music-player">
         <audio id="background-music" loop>
             <source src="wedding_song.mp3" type="audio/mpeg">
@@ -405,12 +398,13 @@
         let currentTheme = localStorage.getItem('userTheme') || 'dark';
         const ownerUsername = "Halaldeveloper";
 
-        // Custom Cursor
         const cursor = document.getElementById('cursor');
-        document.addEventListener('mousemove', (e) => {
+        function updateCursor(e) {
             cursor.style.left = e.pageX - 20 + 'px';
             cursor.style.top = e.pageY - 20 + 'px';
-        });
+            cursor.style.display = 'block';
+        }
+        document.addEventListener('mousemove', updateCursor);
         document.querySelectorAll('a, button').forEach(item => {
             item.addEventListener('mouseover', () => cursor.classList.add('hover'));
             item.addEventListener('mouseout', () => cursor.classList.remove('hover'));
@@ -426,15 +420,12 @@
                 updateUI();
                 updateProfile(currentUser);
             }
-            // Feature 5: Particle Effects
             particlesJS("particles-js", {
                 particles: { number: { value: 50 }, color: { value: "#ff4040" }, move: { speed: 2 } }
             });
-            // Feature 8: Dark Mode Auto-Toggle
             if (window.matchMedia('(prefers-color-scheme: dark)').matches && !localStorage.getItem('userTheme')) setTheme('dark');
         };
 
-        // Feature 8: Loading Animation for Page Transitions
         function showPage(page) {
             document.body.innerHTML += '<div id="loading" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #ff4040;">Loading...</div>';
             setTimeout(() => {
@@ -451,6 +442,9 @@
                     document.getElementById('chat').classList.add('hidden');
                     document.getElementById('updates').classList.add('hidden');
                 }
+                updateMusicButton();
+                document.body.appendChild(cursor);
+                document.addEventListener('mousemove', updateCursor);
             }, 500);
         }
 
@@ -458,6 +452,7 @@
             const username = document.getElementById("login-username").value;
             const password = document.getElementById("login-password").value;
             if (username === ownerUsername && password === "HOOKfor9") {
+                ensureUserData(username);
                 playSound('fanfare');
                 alert("Login successful as owner!");
                 document.getElementById("user-name").innerText = username;
@@ -474,6 +469,7 @@
                     alert("You are banned and cannot log in.");
                     return;
                 }
+                ensureUserData(username);
                 playSound('fanfare');
                 alert("Login successful!");
                 document.getElementById("user-name").innerText = username;
@@ -495,7 +491,18 @@
                 if (userData[username] || username === ownerUsername) {
                     alert("Username already taken or reserved!");
                 } else {
-                    userData[username] = { password, projectsCreated: 0, blogPosts: 0, history: [], isBanned: false, avatar: 'default-avatar.png', bio: '', xp: 0, followers: [] };
+                    userData[username] = {
+                        password,
+                        projectsCreated: 0,
+                        blogPosts: 0,
+                        history: [],
+                        isBanned: false,
+                        avatar: 'default-avatar.png',
+                        bio: '',
+                        xp: 0,
+                        followers: [],
+                        notifications: []
+                    };
                     localStorage.setItem('userData', JSON.stringify(userData));
                     playSound('fanfare');
                     alert("Registration successful! Please login.");
@@ -562,9 +569,19 @@
         }
 
         function playSound(type) {
-            const sound = document.getElementById(type === 'click' ? 'click-sound' : 'fanfare-sound');
-            sound.currentTime = 0;
-            sound.play();
+            const clickSound = document.getElementById('click-sound');
+            const fanfareSound = document.getElementById('fanfare-sound');
+            if (type === 'click') {
+                fanfareSound.pause();
+                fanfareSound.currentTime = 0;
+                clickSound.currentTime = 0;
+                clickSound.play();
+            } else {
+                clickSound.pause();
+                clickSound.currentTime = 0;
+                fanfareSound.currentTime = 0;
+                fanfareSound.play();
+            }
         }
 
         function updateLeaderboard() {
@@ -605,7 +622,6 @@
             }
         }
 
-        // Feature 3: Interactive Chat Upgrades
         function sendChat() {
             const message = document.getElementById("chat-input").value;
             if (message && isLoggedIn) {
@@ -615,6 +631,8 @@
                 document.getElementById("chat-input").value = "";
                 addXP(5);
                 playSound('click');
+                const chatBox = document.getElementById("chat-box");
+                chatBox.scrollTop = chatBox.scrollHeight;
             }
         }
 
@@ -646,7 +664,7 @@
                 const projectCard = document.querySelector(`.project-card[data-title="${projectName}"]`);
                 if (projectCard) {
                     const desc = projectCard.querySelector('p').innerText;
-                    previewContent.innerHTML = `<p>${projectName} Preview</p><p>${desc}</p>`;
+                    previewContent.innerHTML = `<p>${projectName} Preview</p><p>${desc}</p><p>(No image available)</p>`;
                 }
             }
             showPage('project-preview');
@@ -668,7 +686,6 @@
             }
         }
 
-        // Feature 1: Enhanced User Profiles
         function updateAvatar() {
             const url = document.getElementById("avatar-url").value;
             userData[currentUser].avatar = url || 'default-avatar.png';
@@ -693,7 +710,6 @@
             updateLevel();
         }
 
-        // Feature 2: Project Creation & Collaboration
         function submitProject() {
             const title = document.getElementById("project-title").value;
             const desc = document.getElementById("project-desc").value;
@@ -719,7 +735,6 @@
             if (message) alert(`Message sent to ${username}: "${message}" (Simulated)`);
         }
 
-        // Feature 4: Blog Enhancements
         function addComment(button) {
             const input = button.previousElementSibling;
             const comment = input.value;
@@ -732,7 +747,6 @@
             }
         }
 
-        // Feature 7: Social Features
         function followUser(targetUser) {
             if (!userData[targetUser].followers.includes(currentUser)) {
                 userData[targetUser].followers.push(currentUser);
@@ -745,7 +759,6 @@
             alert(`Followers: ${userData[currentUser].followers.join(", ") || "None"}`);
         }
 
-        // Feature 10: Owner Tools
         function banUser() {
             if (currentUser !== ownerUsername) {
                 alert("Only the owner can ban users.");
@@ -792,26 +805,47 @@
             playSound('fanfare');
         }
 
-        // Feature 5: Dynamic Music
         const music = document.getElementById('background-music');
         const musicToggle = document.getElementById('music-toggle');
         let isPlaying = false;
+
+        function updateMusicButton() {
+            musicToggle.textContent = music.paused ? 'Play Music' : 'Pause Music';
+            isPlaying = !music.paused;
+        }
+
         musicToggle.addEventListener('click', () => {
-            if (isPlaying) {
-                music.pause();
-                musicToggle.textContent = 'Play Music';
+            if (music.paused) {
+                music.play().catch(err => console.log("Audio play failed:", err));
             } else {
-                music.play();
-                musicToggle.textContent = 'Pause Music';
+                music.pause();
             }
-            isPlaying = !isPlaying;
-        });
-        document.getElementById("music-select").addEventListener("change", () => {
-            music.src = document.getElementById("music-select").value;
-            if (isPlaying) music.play();
+            updateMusicButton();
         });
 
-        // Persistent Settings and Login
+        document.getElementById("music-select").addEventListener("change", () => {
+            music.src = document.getElementById("music-select").value;
+            if (isPlaying) {
+                music.play().catch(err => console.log("Audio play failed:", err));
+            }
+            updateMusicButton();
+        });
+
+        music.addEventListener('pause', updateMusicButton);
+        music.addEventListener('play', updateMusicButton);
+
+        function ensureUserData(username) {
+            userData[username] = {
+                ...userData[username],
+                avatar: userData[username].avatar || 'default-avatar.png',
+                bio: userData[username].bio || '',
+                xp: userData[username].xp || 0,
+                followers: userData[username].followers || [],
+                notifications: userData[username].notifications || []
+            };
+            saveUserData();
+        }
+
         function saveSettings() {
             localStorage.setItem('userTheme', currentTheme);
         }
