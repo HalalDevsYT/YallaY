@@ -83,6 +83,7 @@
             transform: scale(1.05);
             box-shadow: 0 0 20px #ff4040;
         }
+        .button:focus { outline: 2px solid #ff9900; } /* Accessibility */
 
         .container {
             max-width: 550px;
@@ -176,9 +177,7 @@
             transition: transform 0.1s;
             z-index: 9999;
         }
-        .cursor.hover {
-            transform: scale(1.5);
-        }
+        .cursor.hover { transform: scale(1.5); }
 
         #music-player {
             position: fixed;
@@ -201,11 +200,18 @@
             transition: background 0.3s;
         }
         #music-toggle:hover { background: #cc3333; }
+
+        /* New Styles */
+        .comments { margin-top: 10px; }
+        .comment-list p { font-size: 12px; margin: 5px 0; }
+        #particles-js { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
 </head>
 <body>
     <div class="cursor" id="cursor"></div>
+    <div id="particles-js"></div>
 
     <header>
         <div>
@@ -218,8 +224,8 @@
     <main id="content">
         <section id="home">
             <h2>Welcome to YallaY’s World!</h2>
-            <button class="button" id="login-btn" onclick="playSound('click'); showPage('login-form')">Login</button>
-            <button class="button" id="register-btn" onclick="playSound('click'); showPage('register-form')">Register</button>
+            <button class="button" id="login-btn" title="Click to log in" onclick="playSound('click'); showPage('login-form')">Login</button>
+            <button class="button" id="register-btn" title="Click to register" onclick="playSound('click'); showPage('register-form')">Register</button>
             <button class="button hidden" id="profile-btn" onclick="playSound('click'); showPage('profile')">Profile</button>
             <button class="button" id="projects-btn" onclick="playSound('click'); showPage('projects')">Projects</button>
             <button class="button" id="blog-btn" onclick="playSound('click'); showPage('blog')">Blog</button>
@@ -245,11 +251,19 @@
             <button class="button" onclick="showPage('home')">Back</button>
         </div>
 
+        <!-- Feature 1: Enhanced User Profiles -->
         <div id="profile" class="container hidden">
             <h2>Profile</h2>
             <p>Welcome, <span id="user-name">User</span>!</p>
+            <img id="avatar-display" src="default-avatar.png" alt="Avatar" style="width: 100px; border-radius: 50%;">
+            <input type="text" id="avatar-url" class="input-field" placeholder="Avatar URL (e.g., image link)">
+            <button class="button" onclick="updateAvatar()">Update Avatar</button>
+            <textarea id="bio" class="input-field" placeholder="Your bio..."></textarea>
+            <button class="button" onclick="updateBio()">Save Bio</button>
+            <p>Level: <span id="user-level">1</span> (XP: <span id="user-xp">0</span>)</p>
             <p>Projects Created: <span id="projects-created">0</span></p>
             <p>Blog Posts Written: <span id="blog-posts">0</span></p>
+            <button class="button" onclick="showFollowers()">Followers: <span id="follower-count">0</span></button>
             <div id="achievements"></div>
             <button class="button" onclick="fetchRealStats()">Refresh Stats</button>
             <button class="button" onclick="logout()">Logout</button>
@@ -263,6 +277,7 @@
             <button class="button" onclick="showPage('home')">Back</button>
         </div>
 
+        <!-- Feature 2: Project Creation & Collaboration -->
         <div id="projects" class="container hidden">
             <h2>My Projects</h2>
             <div id="project-list">
@@ -277,19 +292,40 @@
                     <button class="button" onclick="showProjectPreview('Project 2')">Preview</button>
                 </div>
             </div>
+            <button class="button" onclick="showPage('new-project-form')">New Project</button>
             <button class="button" onclick="showPage('home')">Back</button>
         </div>
+        <div id="new-project-form" class="container hidden">
+            <h3>Create a New Project</h3>
+            <input type="text" id="project-title" class="input-field" placeholder="Project Title">
+            <textarea id="project-desc" class="input-field" placeholder="Description"></textarea>
+            <input type="checkbox" id="collab-open" name="collab-open">
+            <label for="collab-open">Open for Collaboration</label>
+            <button class="button" onclick="submitProject()">Submit</button>
+            <button class="button" onclick="showPage('projects')">Cancel</button>
+        </div>
 
+        <!-- Feature 4: Blog Enhancements -->
         <div id="blog" class="container hidden">
             <h2>YallaY’s Blog</h2>
             <div id="blog-posts-list">
                 <div class="blog-post">
                     <h3>My Journey as YallaY</h3>
                     <p>Started creating amazing projects—stay tuned for more updates!</p>
+                    <div class="comments">
+                        <input type="text" class="input-field comment-input" placeholder="Add a comment...">
+                        <button class="button" onclick="addComment(this)">Comment</button>
+                        <div class="comment-list"></div>
+                    </div>
                 </div>
                 <div class="blog-post">
                     <h3>Future Ideas</h3>
                     <p>Thinking about a new game or app—let me know what you think!</p>
+                    <div class="comments">
+                        <input type="text" class="input-field comment-input" placeholder="Add a comment...">
+                        <button class="button" onclick="addComment(this)">Comment</button>
+                        <div class="comment-list"></div>
+                    </div>
                 </div>
             </div>
             <button class="button" onclick="showPage('home')">Back</button>
@@ -309,10 +345,11 @@
             <p>Top Creator: <span id="top-creator">N/A</span> - <span id="top-projects">0</span> Projects</p>
         </div>
 
+        <!-- Feature 3: Interactive Chat Upgrades -->
         <div id="chat" class="hidden">
             <h3>YallaY Chat</h3>
             <div id="chat-box"></div>
-            <input type="text" id="chat-input" class="input-field" placeholder="Type a message...">
+            <input type="text" id="chat-input" class="input-field" placeholder="Type a message... (:smile: for 😊)">
             <button class="button" onclick="sendChat()">Send</button>
         </div>
 
@@ -330,12 +367,17 @@
             <button class="button" onclick="hideProjectPreview()">Back</button>
         </div>
 
+        <!-- Feature 10: Owner Tools Expansion -->
         <div id="owner-tools" class="container hidden">
             <h2>Owner Tools</h2>
             <input type="text" id="ban-username" class="input-field" placeholder="Username to ban">
             <button class="button" onclick="banUser()">Ban User</button>
             <input type="text" id="unban-username" class="input-field" placeholder="Username to unban">
             <button class="button" onclick="unbanUser()">Unban User</button>
+            <div id="user-management">
+                <h3>User Management</h3>
+                <div id="user-list"></div>
+            </div>
             <button class="button" onclick="showPage('home')">Back</button>
         </div>
     </main>
@@ -343,11 +385,16 @@
     <audio id="click-sound" src="https://www.myinstants.com/media/sounds/button-click.mp3" preload="auto"></audio>
     <audio id="fanfare-sound" src="https://www.myinstants.com/media/sounds/fanfare.mp3" preload="auto"></audio>
     
+    <!-- Feature 5: Visual & Audio Flair - Music Player -->
     <div id="music-player">
         <audio id="background-music" loop>
             <source src="wedding_song.mp3" type="audio/mpeg">
             Your browser does not support the audio element.
         </audio>
+        <select id="music-select">
+            <option value="wedding_song.mp3">Wedding Song</option>
+            <option value="track2.mp3">Track 2 (Add your own)</option>
+        </select>
         <button id="music-toggle">Play Music</button>
     </div>
 
@@ -356,7 +403,7 @@
         let currentUser = localStorage.getItem('currentUser') || null;
         let userData = JSON.parse(localStorage.getItem('userData')) || {};
         let currentTheme = localStorage.getItem('userTheme') || 'dark';
-        const ownerUsername = "Halaldeveloper"; // Define the owner
+        const ownerUsername = "Halaldeveloper";
 
         // Custom Cursor
         const cursor = document.getElementById('cursor');
@@ -379,21 +426,32 @@
                 updateUI();
                 updateProfile(currentUser);
             }
+            // Feature 5: Particle Effects
+            particlesJS("particles-js", {
+                particles: { number: { value: 50 }, color: { value: "#ff4040" }, move: { speed: 2 } }
+            });
+            // Feature 8: Dark Mode Auto-Toggle
+            if (window.matchMedia('(prefers-color-scheme: dark)').matches && !localStorage.getItem('userTheme')) setTheme('dark');
         };
 
+        // Feature 8: Loading Animation for Page Transitions
         function showPage(page) {
-            document.querySelectorAll("main section, .container").forEach(section => {
-                section.classList.add("hidden");
-            });
-            document.getElementById(page).classList.remove("hidden");
-            if (isLoggedIn && page === 'home') {
-                document.getElementById('leaderboard').classList.remove('hidden');
-                document.getElementById('chat').classList.remove('hidden');
-                document.getElementById('updates').classList.remove('hidden');
-            } else {
-                document.getElementById('chat').classList.add('hidden');
-                document.getElementById('updates').classList.add('hidden');
-            }
+            document.body.innerHTML += '<div id="loading" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #ff4040;">Loading...</div>';
+            setTimeout(() => {
+                document.getElementById("loading").remove();
+                document.querySelectorAll("main section, .container").forEach(section => {
+                    section.classList.add("hidden");
+                });
+                document.getElementById(page).classList.remove("hidden");
+                if (isLoggedIn && page === 'home') {
+                    document.getElementById('leaderboard').classList.remove('hidden');
+                    document.getElementById('chat').classList.remove('hidden');
+                    document.getElementById('updates').classList.remove('hidden');
+                } else {
+                    document.getElementById('chat').classList.add('hidden');
+                    document.getElementById('updates').classList.add('hidden');
+                }
+            }, 500);
         }
 
         function login() {
@@ -437,7 +495,7 @@
                 if (userData[username] || username === ownerUsername) {
                     alert("Username already taken or reserved!");
                 } else {
-                    userData[username] = { password, projectsCreated: 0, blogPosts: 0, history: [], isBanned: false };
+                    userData[username] = { password, projectsCreated: 0, blogPosts: 0, history: [], isBanned: false, avatar: 'default-avatar.png', bio: '', xp: 0, followers: [] };
                     localStorage.setItem('userData', JSON.stringify(userData));
                     playSound('fanfare');
                     alert("Registration successful! Please login.");
@@ -473,9 +531,14 @@
         function updateProfile(username) {
             document.getElementById("projects-created").innerText = userData[username].projectsCreated || 0;
             document.getElementById("blog-posts").innerText = userData[username].blogPosts || 0;
+            document.getElementById("avatar-display").src = userData[username].avatar;
+            document.getElementById("bio").value = userData[username].bio;
+            document.getElementById("follower-count").innerText = userData[username].followers.length;
             updateLeaderboard();
             updateAchievements(username);
             updateUpdates(username);
+            updateLevel();
+            if (currentUser === ownerUsername) updateUserManagement();
         }
 
         function updateAchievements(username) {
@@ -525,7 +588,6 @@
                     const title = project.querySelector('h3').innerText.toLowerCase();
                     project.classList.toggle('hidden', !title.includes(query));
                 });
-                // Search players and display results
                 const playerResults = Object.keys(userData).filter(username => 
                     username.toLowerCase().includes(query) && username !== currentUser
                 );
@@ -536,19 +598,22 @@
                     const resultsDiv = document.createElement("div");
                     resultsDiv.id = "player-search-results";
                     resultsDiv.innerHTML = "<h3>Players Found</h3>" + playerResults.map(user => 
-                        `<div class="project-card"><h3>${user}</h3><p>Projects: ${userData[user].projectsCreated}</p></div>`
+                        `<div class="project-card"><h3>${user}</h3><p>Projects: ${userData[user].projectsCreated}</p><button class="button" onclick="followUser('${user}')">Follow</button></div>`
                     ).join('');
                     projectList.appendChild(resultsDiv);
                 }
             }
         }
 
+        // Feature 3: Interactive Chat Upgrades
         function sendChat() {
             const message = document.getElementById("chat-input").value;
             if (message && isLoggedIn) {
-                const username = document.getElementById("user-name").innerText;
-                document.getElementById("chat-box").innerHTML += `<p><b>${username}:</b> ${message}</p>`;
+                const timestamp = new Date().toLocaleString();
+                const formattedMessage = message.replace(':smile:', '😊').replace(':fire:', '🔥');
+                document.getElementById("chat-box").innerHTML += `<p><b>${currentUser}</b> [${timestamp}]: ${formattedMessage}</p>`;
                 document.getElementById("chat-input").value = "";
+                addXP(5);
                 playSound('click');
             }
         }
@@ -577,6 +642,12 @@
                 previewContent.innerHTML = `<p>Laser Tag Preview</p><img src="Preview_1.png" class="preview_1" alt="Project 1 Preview">`;
             } else if (projectName === "Project 2") {
                 previewContent.innerHTML = `<p>SparkAt Preview: Meet SparkAt, a next-gen AI chat that ignites your imagination with lightning-fast responses and a fiery passion for conversation!</p><img src="Preview_2.png" class="preview_2" alt="Project 2 Preview">`;
+            } else {
+                const projectCard = document.querySelector(`.project-card[data-title="${projectName}"]`);
+                if (projectCard) {
+                    const desc = projectCard.querySelector('p').innerText;
+                    previewContent.innerHTML = `<p>${projectName} Preview</p><p>${desc}</p>`;
+                }
             }
             showPage('project-preview');
         }
@@ -597,7 +668,84 @@
             }
         }
 
-        // Owner Tools
+        // Feature 1: Enhanced User Profiles
+        function updateAvatar() {
+            const url = document.getElementById("avatar-url").value;
+            userData[currentUser].avatar = url || 'default-avatar.png';
+            document.getElementById("avatar-display").src = userData[currentUser].avatar;
+            saveUserData();
+            playSound('click');
+        }
+        function updateBio() {
+            userData[currentUser].bio = document.getElementById("bio").value;
+            saveUserData();
+            playSound('click');
+        }
+        function updateLevel() {
+            const xp = userData[currentUser].xp || 0;
+            const level = Math.floor(xp / 100) + 1;
+            document.getElementById("user-xp").innerText = xp;
+            document.getElementById("user-level").innerText = level;
+        }
+        function addXP(points) {
+            userData[currentUser].xp = (userData[currentUser].xp || 0) + points;
+            saveUserData();
+            updateLevel();
+        }
+
+        // Feature 2: Project Creation & Collaboration
+        function submitProject() {
+            const title = document.getElementById("project-title").value;
+            const desc = document.getElementById("project-desc").value;
+            const collab = document.getElementById("collab-open").checked;
+            if (title && desc && isLoggedIn) {
+                userData[currentUser].projectsCreated++;
+                addXP(50);
+                const projectHTML = `
+                    <div class="project-card" data-title="${title}">
+                        <h3>${title}</h3>
+                        <p>${desc}${collab ? ' <span style="color: #ff9900">[Open for Collab]</span>' : ''}</p>
+                        <button class="button" onclick="showProjectPreview('${title}')">Preview</button>
+                        ${collab ? `<button class="button" onclick="messageCreator('${currentUser}')">Message</button>` : ''}
+                    </div>`;
+                document.getElementById("project-list").innerHTML += projectHTML;
+                saveUserData();
+                playSound('fanfare');
+                showPage('projects');
+            }
+        }
+        function messageCreator(username) {
+            const message = prompt(`Send a message to ${username}:`);
+            if (message) alert(`Message sent to ${username}: "${message}" (Simulated)`);
+        }
+
+        // Feature 4: Blog Enhancements
+        function addComment(button) {
+            const input = button.previousElementSibling;
+            const comment = input.value;
+            if (comment && isLoggedIn) {
+                const commentList = button.nextElementSibling;
+                commentList.innerHTML += `<p><b>${currentUser}</b>: ${comment}</p>`;
+                input.value = "";
+                addXP(10);
+                playSound('click');
+            }
+        }
+
+        // Feature 7: Social Features
+        function followUser(targetUser) {
+            if (!userData[targetUser].followers.includes(currentUser)) {
+                userData[targetUser].followers.push(currentUser);
+                saveUserData();
+                alert(`Now following ${targetUser}!`);
+                updateProfile(currentUser);
+            }
+        }
+        function showFollowers() {
+            alert(`Followers: ${userData[currentUser].followers.join(", ") || "None"}`);
+        }
+
+        // Feature 10: Owner Tools
         function banUser() {
             if (currentUser !== ownerUsername) {
                 alert("Only the owner can ban users.");
@@ -606,15 +754,13 @@
             const username = document.getElementById("ban-username").value;
             if (username && userData[username] && username !== ownerUsername) {
                 userData[username].isBanned = true;
-                localStorage.setItem('userData', JSON.stringify(userData));
+                saveUserData();
                 playSound('fanfare');
                 alert(`${username} has been banned!`);
                 document.getElementById("ban-username").value = "";
-            } else {
-                alert("Invalid username or cannot ban the owner.");
+                updateUserManagement();
             }
         }
-
         function unbanUser() {
             if (currentUser !== ownerUsername) {
                 alert("Only the owner can unban users.");
@@ -623,20 +769,33 @@
             const username = document.getElementById("unban-username").value;
             if (username && userData[username]) {
                 userData[username].isBanned = false;
-                localStorage.setItem('userData', JSON.stringify(userData));
+                saveUserData();
                 playSound('fanfare');
                 alert(`${username} has been unbanned!`);
                 document.getElementById("unban-username").value = "";
-            } else {
-                alert("Invalid username.");
+                updateUserManagement();
             }
         }
+        function updateUserManagement() {
+            const userList = document.getElementById("user-list");
+            userList.innerHTML = Object.keys(userData).map(user => `
+                <div>
+                    <p>${user} - Projects: ${userData[user].projectsCreated} - ${userData[user].isBanned ? 'Banned' : 'Active'}</p>
+                    <button class="button" onclick="toggleBan('${user}')">${userData[user].isBanned ? 'Unban' : 'Ban'}</button>
+                </div>
+            `).join('');
+        }
+        function toggleBan(user) {
+            userData[user].isBanned = !userData[user].isBanned;
+            saveUserData();
+            updateUserManagement();
+            playSound('fanfare');
+        }
 
-        // Music Player
+        // Feature 5: Dynamic Music
         const music = document.getElementById('background-music');
         const musicToggle = document.getElementById('music-toggle');
         let isPlaying = false;
-
         musicToggle.addEventListener('click', () => {
             if (isPlaying) {
                 music.pause();
@@ -647,18 +806,23 @@
             }
             isPlaying = !isPlaying;
         });
+        document.getElementById("music-select").addEventListener("change", () => {
+            music.src = document.getElementById("music-select").value;
+            if (isPlaying) music.play();
+        });
 
         // Persistent Settings and Login
         function saveSettings() {
             localStorage.setItem('userTheme', currentTheme);
         }
-
+        function saveUserData() {
+            localStorage.setItem('userData', JSON.stringify(userData));
+        }
         function saveLoginState() {
             localStorage.setItem('isLoggedIn', isLoggedIn);
             localStorage.setItem('currentUser', currentUser);
             saveSettings();
         }
-
         function applySavedSettings() {
             const savedTheme = localStorage.getItem('userTheme');
             if (savedTheme) {
@@ -667,7 +831,6 @@
                 currentTheme = savedTheme;
             }
         }
-
         window.addEventListener('beforeunload', () => {
             saveLoginState();
         });
