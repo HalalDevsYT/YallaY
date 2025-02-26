@@ -427,25 +427,21 @@
         };
 
         function showPage(page) {
-            document.body.innerHTML += '<div id="loading" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #ff4040;">Loading...</div>';
-            setTimeout(() => {
-                document.getElementById("loading").remove();
-                document.querySelectorAll("main section, .container").forEach(section => {
-                    section.classList.add("hidden");
-                });
-                document.getElementById(page).classList.remove("hidden");
-                if (isLoggedIn && page === 'home') {
-                    document.getElementById('leaderboard').classList.remove('hidden');
-                    document.getElementById('chat').classList.remove('hidden');
-                    document.getElementById('updates').classList.remove('hidden');
-                } else {
-                    document.getElementById('chat').classList.add('hidden');
-                    document.getElementById('updates').classList.add('hidden');
-                }
-                updateMusicButton();
-                document.body.appendChild(cursor);
-                document.addEventListener('mousemove', updateCursor);
-            }, 500);
+            document.querySelectorAll("main section, .container").forEach(section => {
+                section.classList.add("hidden");
+            });
+            document.getElementById(page).classList.remove("hidden");
+            if (isLoggedIn && page === 'home') {
+                document.getElementById('leaderboard').classList.remove('hidden');
+                document.getElementById('chat').classList.remove('hidden');
+                document.getElementById('updates').classList.remove('hidden');
+            } else {
+                document.getElementById('chat').classList.add('hidden');
+                document.getElementById('updates').classList.add('hidden');
+            }
+            updateMusicButton();
+            document.body.appendChild(cursor);
+            document.addEventListener('mousemove', updateCursor);
         }
 
         function login() {
