@@ -41,7 +41,7 @@
             align-items: center;
             justify-content: space-between;
             box-shadow: 0 0 20px #ff4040;
-            position: fixed; /* Fixed on mobile */
+            position: fixed;
             top: 0;
             width: 100%;
             z-index: 1000;
@@ -224,11 +224,77 @@
         .reactions { margin-left: 10px; }
         .reactions button { padding: 5px; font-size: 12px; background: none; border: none; cursor: pointer; }
         #achievements-wall { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+        
+        /* Enhanced Login/Register Styles */
+        #auth-container {
+            position: relative;
+            overflow: hidden;
+        }
+        #auth-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(255, 64, 64, 0.2), rgba(255, 153, 0, 0.2));
+            animation: formBG 10s ease infinite;
+            z-index: -1;
+        }
+        @keyframes formBG {
+            0% { transform: translateX(-50%) translateY(-50%) rotate(0deg); }
+            50% { transform: translateX(50%) translateY(50%) rotate(180deg); }
+            100% { transform: translateX(-50%) translateY(-50%) rotate(360deg); }
+        }
+        #password-strength {
+            height: 5px;
+            background: #444;
+            margin: 5px 0;
+        }
+        #strength-bar {
+            height: 100%;
+            width: 0%;
+            background: #ff4040;
+            transition: width 0.3s;
+        }
+        #loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #ff9900;
+            border-top: 3px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        #welcome-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px #ff4040;
+            z-index: 2000;
+            animation: fadeInOut 2s ease forwards;
+        }
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translate(-50%, -60%); }
+            20% { opacity: 1; transform: translate(-50%, -50%); }
+            80% { opacity: 1; transform: translate(-50%, -50%); }
+            100% { opacity: 0; transform: translate(-50%, -40%); display: none; }
+        }
         @media (max-width: 600px) {
             header { flex-wrap: wrap; padding: 10px; }
             header img { height: 60px; }
             .search-bar { width: 100%; margin-top: 10px; }
-            main { margin-top: 120px; } /* Space for fixed header */
+            main { margin-top: 120px; }
+            #auth-container { padding: 15px; }
         }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
@@ -260,8 +326,8 @@
                 <p id="challenge-text">Loading...</p>
                 <button class="button" onclick="completeChallenge()">Complete</button>
             </div>
-            <button class="button" id="login-btn" title="Click to log in" onclick="playSound('click'); showPage('login-form')">Login</button>
-            <button class="button" id="register-btn" title="Click to register" onclick="playSound('click'); showPage('register-form')">Register</button>
+            <button class="button" id="login-btn" title="Click to log in" onclick="playSound('click'); isLoginMode = true; document.getElementById('auth-title').innerText = 'Login'; document.getElementById('auth-submit').innerText = 'Login'; document.getElementById('auth-toggle').innerText = 'Register instead'; document.getElementById('auth-avatar-preview').style.display = 'none'; showPage('auth-container')">Login</button>
+            <button class="button" id="register-btn" title="Click to register" onclick="playSound('click'); isLoginMode = false; document.getElementById('auth-title').innerText = 'Register'; document.getElementById('auth-submit').innerText = 'Register'; document.getElementById('auth-toggle').innerText = 'Login instead'; document.getElementById('auth-avatar-preview').style.display = 'block'; showPage('auth-container')">Register</button>
             <button class="button hidden" id="profile-btn" onclick="playSound('click'); showPage('profile')">Profile</button>
             <button class="button" id="projects-btn" onclick="playSound('click'); showPage('projects')">Projects</button>
             <button class="button" id="blog-btn" onclick="playSound('click'); showPage('blog')">Blog</button>
@@ -271,19 +337,27 @@
             <button class="button hidden" id="logout-btn" onclick="logout()">Logout</button>
         </section>
         
-        <div id="login-form" class="container hidden">
-            <h2>Login</h2>
-            <input type="text" id="login-username" class="input-field" placeholder="Username">
-            <input type="password" id="login-password" class="input-field" placeholder="Password">
-            <button class="button" onclick="login()">Login</button>
-            <button class="button" onclick="showPage('home')">Back</button>
-        </div>
-
-        <div id="register-form" class="container hidden">
-            <h2>Register</h2>
-            <input type="text" id="reg-username" class="input-field" placeholder="Username">
-            <input type="password" id="reg-password" class="input-field" placeholder="Password">
-            <button class="button" onclick="register()">Register</button>
+        <div id="auth-container" class="container hidden">
+            <h2 id="auth-title">Login</h2>
+            <input type="text" id="auth-username" class="input-field" placeholder="Username">
+            <input type="password" id="auth-password" class="input-field" placeholder="Password">
+            <div id="password-strength">
+                <div id="strength-bar"></div>
+            </div>
+            <img id="auth-avatar-preview" src="default-avatar.png" alt="Avatar Preview" style="width: 50px; border-radius: 50%; margin: 10px auto; display: none;">
+            <input type="checkbox" id="remember-me" style="margin-right: 5px;"><label for="remember-me" style="font-size: 12px;">Remember Me</label>
+            <div id="loading-spinner"></div>
+            <button class="button" id="auth-submit" onclick="authSubmit()">Login</button>
+            <p style="font-size: 12px; margin: 5px 0;">
+                <a href="#" onclick="alert('Hint: Owner password is HOOKfor9! For others, tough luck!'); return false;" style="color: #ff9900;">Forgot Password?</a>
+            </p>
+            <div style="margin: 10px 0;">
+                <button class="button" style="background: #1da1f2;" onclick="alert('Simulated Twitter login! Use manual login for now.');">Login with Twitter</button>
+                <button class="button" style="background: #7289da;" onclick="alert('Simulated Discord login! Use manual login for now.');">Login with Discord</button>
+            </div>
+            <p style="font-size: 12px; margin: 5px 0;">
+                <a href="#" id="auth-toggle" onclick="toggleAuthMode(); return false;" style="color: #ff9900;">Register instead</a>
+            </p>
             <button class="button" onclick="showPage('home')">Back</button>
         </div>
 
@@ -447,7 +521,8 @@
             blogPosts: [
                 { title: "My Journey as YallaY", content: "Started creating amazing projects—stay tuned for more updates!", creator: "Halaldeveloper", comments: [], reactions: { '👍': 0, '🔥': 0 } },
                 { title: "Future Ideas", content: "Thinking about a new game or app—let me know what you think!", creator: "Halaldeveloper", comments: [], reactions: { '👍': 0, '🔥': 0 } }
-            ]
+            ],
+            activeUsers: 0
         };
         const ownerUsername = "Halaldeveloper";
         const fakeUsers = ["SparkAt", "LaserLad", "CodeMaster", "YallaFan"];
@@ -484,6 +559,8 @@
                 updateUI();
                 updateProfile(currentUser);
                 updateNotifications();
+                siteData.activeUsers++;
+                saveSiteData();
             }
             loadSiteData();
             particlesJS("particles-js", {
@@ -493,6 +570,9 @@
             updateVisitorCount();
             setInterval(updateVisitorCount, 5000);
             updateDailyChallenge();
+            if (localStorage.getItem('rememberedUsername')) {
+                document.getElementById("auth-username").value = localStorage.getItem('rememberedUsername');
+            }
         };
 
         function showPage(page) {
@@ -508,6 +588,7 @@
                 document.getElementById('chat').classList.add('hidden');
                 document.getElementById('updates').classList.add('hidden');
             }
+            document.getElementById("welcome-message")?.remove();
             updateMusicButton();
             document.body.appendChild(cursor);
             document.addEventListener('mousemove', updateCursor);
@@ -517,89 +598,106 @@
             if (page === 'chat') loadChatMessages();
         }
 
-        function login() {
-            const username = document.getElementById("login-username").value;
-            const password = document.getElementById("login-password").value;
-            if (username === ownerUsername && password === "HOOKfor9") {
-                ensureUserData(username);
-                playSound('fanfare');
-                alert("Login successful as owner!");
-                document.getElementById("user-name").innerText = username;
-                isLoggedIn = true;
-                currentUser = username;
-                saveLoginState();
-                updateUI();
-                updateProfile(username);
-                updateNotifications();
-                addNotification("You logged in as owner!");
-                showPage('home');
-                return;
-            }
-            if (userData[username] && userData[username].password === password) {
-                if (userData[username].isBanned) {
-                    alert("You are banned and cannot log in.");
-                    return;
-                }
-                ensureUserData(username);
-                playSound('fanfare');
-                alert("Login successful!");
-                document.getElementById("user-name").innerText = username;
-                isLoggedIn = true;
-                currentUser = username;
-                saveLoginState();
-                updateUI();
-                updateProfile(username);
-                updateNotifications();
-                addNotification("You logged in!");
-                showPage('home');
-            } else {
-                alert("Invalid username or password.");
-            }
+        let isLoginMode = true;
+
+        function toggleAuthMode() {
+            isLoginMode = !isLoginMode;
+            document.getElementById("auth-title").innerText = isLoginMode ? "Login" : "Register";
+            document.getElementById("auth-submit").innerText = isLoginMode ? "Login" : "Register";
+            document.getElementById("auth-toggle").innerText = isLoginMode ? "Register instead" : "Login instead";
+            document.getElementById("auth-avatar-preview").style.display = isLoginMode ? "none" : "block";
+            document.getElementById("strength-bar").style.width = "0%";
+            document.getElementById("auth-username").value = localStorage.getItem('rememberedUsername') || '';
+            document.getElementById("auth-password").value = '';
         }
 
-        function register() {
-            const username = document.getElementById("reg-username").value;
-            const password = document.getElementById("reg-password").value;
-            if (username && password) {
-                if (userData[username] || username === ownerUsername) {
-                    alert("Username already taken or reserved!");
+        function authSubmit() {
+            const username = document.getElementById("auth-username").value.trim();
+            const password = document.getElementById("auth-password").value;
+            const rememberMe = document.getElementById("remember-me").checked;
+            const spinner = document.getElementById("loading-spinner");
+            spinner.style.display = "block";
+            document.getElementById("auth-submit").disabled = true;
+
+            setTimeout(() => {
+                spinner.style.display = "none";
+                document.getElementById("auth-submit").disabled = false;
+                if (isLoginMode) {
+                    if (username === ownerUsername && password === "HOOKfor9") {
+                        handleLogin(username);
+                    } else if (userData[username] && userData[username].password === password) {
+                        if (userData[username].isBanned) {
+                            alert("You are banned and cannot log in.");
+                            return;
+                        }
+                        handleLogin(username);
+                    } else {
+                        alert("Invalid username or password.");
+                    }
                 } else {
-                    userData[username] = {
-                        password,
-                        projectsCreated: 0,
-                        blogPosts: 0,
-                        history: [],
-                        isBanned: false,
-                        avatar: 'default-avatar.png',
-                        bio: '',
-                        xp: 0,
-                        followers: [],
-                        notifications: [],
-                        profileTheme: '#ff4040',
-                        status: '',
-                        visitors: [],
-                        achieved: {},
-                        collabRequests: [],
-                        cursorColor: '#ff4040'
-                    };
-                    localStorage.setItem('userData', JSON.stringify(userData));
-                    playSound('fanfare');
-                    alert("Registration successful! Please login.");
-                    showPage('login-form');
+                    if (username && password) {
+                        if (userData[username] || username === ownerUsername) {
+                            alert("Username already taken or reserved!");
+                        } else {
+                            userData[username] = {
+                                password,
+                                projectsCreated: 0,
+                                blogPosts: 0,
+                                history: [],
+                                isBanned: false,
+                                avatar: 'default-avatar.png',
+                                bio: '',
+                                xp: 0,
+                                followers: [],
+                                notifications: [],
+                                profileTheme: '#ff4040',
+                                status: '',
+                                visitors: [],
+                                achieved: {},
+                                collabRequests: [],
+                                cursorColor: '#ff4040'
+                            };
+                            localStorage.setItem('userData', JSON.stringify(userData));
+                            playSound('fanfare');
+                            alert("Registration successful! Please login.");
+                            toggleAuthMode();
+                        }
+                    } else {
+                        alert("Please enter a username and password.");
+                    }
                 }
-            } else {
-                alert("Please enter a username and password.");
-            }
+                if (rememberMe) {
+                    localStorage.setItem('rememberedUsername', username);
+                } else {
+                    localStorage.removeItem('rememberedUsername');
+                }
+            }, 1000); // Simulated delay
         }
 
-        function logout() {
-            isLoggedIn = false;
-            currentUser = null;
-            playSound('click');
-            alert("You have been logged out.");
+        function handleLogin(username) {
+            ensureUserData(username);
+            playSound('fanfare');
+            alert(`Login successful${username === ownerUsername ? ' as owner' : ''}!`);
+            document.getElementById("user-name").innerText = username;
+            isLoggedIn = true;
+            currentUser = username;
             saveLoginState();
             updateUI();
+            updateProfile(username);
+            updateNotifications();
+            addNotification(`You logged in${username === ownerUsername ? ' as owner' : ''}!`);
+            siteData.activeUsers++;
+            saveSiteData();
+            showWelcomeMessage(username);
             showPage('home');
+        }
+
+        function showWelcomeMessage(username) {
+            const welcomeDiv = document.createElement("div");
+            welcomeDiv.id = "welcome-message";
+            welcomeDiv.innerHTML = `<h2>Welcome, ${username}!</h2>`;
+            document.body.appendChild(welcomeDiv);
+            setTimeout(() => welcomeDiv.remove(), 2000);
         }
 
         function updateUI() {
@@ -612,6 +710,18 @@
             document.getElementById("settings-btn").classList.toggle("hidden", !isLoggedIn);
             document.getElementById("logout-btn").classList.toggle("hidden", !isLoggedIn);
             document.getElementById("owner-tools-btn").classList.toggle("hidden", !(isLoggedIn && currentUser === ownerUsername));
+        }
+
+        function logout() {
+            isLoggedIn = false;
+            currentUser = null;
+            playSound('click');
+            alert("You have been logged out.");
+            siteData.activeUsers = Math.max(0, siteData.activeUsers - 1);
+            saveSiteData();
+            saveLoginState();
+            updateUI();
+            showPage('home');
         }
 
         function updateProfile(username) {
@@ -1089,8 +1199,10 @@
         }
 
         function updateVisitorCount() {
-            const count = Math.floor(Math.random() * 20) + 1;
-            document.getElementById("visitor-count").innerText = count;
+            const baseCount = siteData.activeUsers; // Real active users
+            const randomFlux = Math.floor(Math.random() * 5) - 2; // Small random variation
+            const liveCount = Math.max(0, baseCount + randomFlux);
+            document.getElementById("visitor-count").innerText = liveCount;
         }
 
         function setProfileTheme() {
