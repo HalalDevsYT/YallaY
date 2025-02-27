@@ -41,6 +41,10 @@
             align-items: center;
             justify-content: space-between;
             box-shadow: 0 0 20px #ff4040;
+            position: fixed; /* Fixed on mobile */
+            top: 0;
+            width: 100%;
+            z-index: 1000;
         }
         
         header img {
@@ -53,7 +57,13 @@
         
         header img:hover { transform: scale(1.1); box-shadow: 0 0 15px #ff4040; }
         
-        header h1 { margin: 0; flex-grow: 1; text-align: left; padding-left: 20px; }
+        header h1 { 
+            margin: 0; 
+            flex-grow: 1; 
+            text-align: left; 
+            padding-left: 20px; 
+            font-size: 1.5em; 
+        }
         
         .search-bar {
             padding: 10px;
@@ -213,6 +223,13 @@
         #particles-js { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
         .reactions { margin-left: 10px; }
         .reactions button { padding: 5px; font-size: 12px; background: none; border: none; cursor: pointer; }
+        #achievements-wall { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+        @media (max-width: 600px) {
+            header { flex-wrap: wrap; padding: 10px; }
+            header img { height: 60px; }
+            .search-bar { width: 100%; margin-top: 10px; }
+            main { margin-top: 120px; } /* Space for fixed header */
+        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
@@ -226,7 +243,7 @@
             <img src="YallaYIcon.png" alt="YallaY Icon" onclick="showPage('home')">
             <h1>YallaY</h1>
         </div>
-        <input type="text" class="search-bar" id="search-bar" placeholder="Search projects or players..." onkeyup="searchProjectsAndPlayers()">
+        <input type="text" class="search-bar" id="search-bar" placeholder="Search projects or players..." onkeypress="if(event.key === 'Enter') searchProjectsAndPlayers()">
         <button class="button" onclick="toggleNotifications()" style="padding: 10px;">🔔 <span id="notification-count">0</span></button>
         <div id="notifications" class="container hidden" style="position: absolute; right: 20px; top: 80px; width: 300px; max-height: 300px; overflow-y: auto;">
             <h3>Notifications</h3>
@@ -238,7 +255,6 @@
         <section id="home">
             <h2>Welcome to YallaY’s World!</h2>
             <p>Live Visitors: <span id="visitor-count">0</span></p>
-            <!-- Feature 1: Daily Challenge -->
             <div id="daily-challenge" class="container">
                 <h3>Daily Challenge</h3>
                 <p id="challenge-text">Loading...</p>
@@ -279,17 +295,14 @@
             <button class="button" onclick="updateAvatar()">Update Avatar</button>
             <textarea id="bio" class="input-field" placeholder="Your bio..."></textarea>
             <button class="button" onclick="updateBio()">Save Bio</button>
-            <!-- Feature 2: User Status -->
             <input type="text" id="user-status" class="input-field" placeholder="Set your status (max 20 chars)" maxlength="20">
             <button class="button" onclick="updateStatus()">Update Status</button>
             <p>Level: <span id="user-level">1</span> (XP: <span id="user-xp">0</span>)</p>
             <p>Projects Created: <span id="projects-created">0</span></p>
             <p>Blog Posts Written: <span id="blog-posts">0</span></p>
             <button class="button" onclick="showFollowers()">Followers: <span id="follower-count">0</span></button>
-            <div id="achievements"></div>
-            <!-- Profile Stats Graph -->
+            <div id="achievements-wall"></div>
             <canvas id="stats-graph" width="300" height="150"></canvas>
-            <!-- Feature 4: Profile Visitor Log -->
             <div id="visitor-log">
                 <h3>Recent Visitors</h3>
                 <ul id="visitor-list"></ul>
@@ -305,9 +318,12 @@
             <button class="button" onclick="setTheme('yalla-orange')">Yalla Orange</button>
             <input type="color" id="profile-color" class="input-field" value="#ff4040">
             <button class="button" onclick="setProfileTheme()">Set Profile Theme</button>
-            <!-- Sound Effect Toggle -->
             <input type="checkbox" id="sound-toggle" checked>
             <label for="sound-toggle">Enable Sound Effects</label>
+            <h4>Site Themes</h4>
+            <button class="button" onclick="setSiteTheme('fire')">Fire</button>
+            <button class="button" onclick="setSiteTheme('ice')">Ice</button>
+            <button class="button" onclick="setSiteTheme('neon')">Neon</button>
             <button class="button" onclick="showPage('home')">Back</button>
         </div>
 
@@ -319,21 +335,7 @@
                 <option value="AI">AI</option>
                 <option value="Other">Other</option>
             </select>
-            <div id="project-list">
-                <div class="project-card" data-category="Games">
-                    <h3>Laser Tag</h3>
-                    <p>An roblox game i made but also there is an website!</p>
-                    <button class="button" onclick="showProjectPreview('Project 1')">Preview</button>
-                    <!-- Feature 3: Reaction Emojis -->
-                    <span class="reactions"><button onclick="addReaction(this, '👍')">👍 <span>0</span></button><button onclick="addReaction(this, '🔥')">🔥 <span>0</span></button></span>
-                </div>
-                <div class="project-card" data-category="AI">
-                    <h3>SparkAt</h3>
-                    <p>A blazing-fast AI chat igniting creativity and conversation!</p>
-                    <button class="button" onclick="showProjectPreview('Project 2')">Preview</button>
-                    <span class="reactions"><button onclick="addReaction(this, '👍')">👍 <span>0</span></button><button onclick="addReaction(this, '🔥')">🔥 <span>0</span></button></span>
-                </div>
-            </div>
+            <div id="project-list"></div>
             <button class="button" onclick="showPage('new-project-form')">New Project</button>
             <button class="button" onclick="showPage('home')">Back</button>
         </div>
@@ -350,28 +352,7 @@
         <div id="blog" class="container hidden">
             <h2>YallaY’s Blog</h2>
             <button class="button" onclick="showPage('new-blog-form')">New Blog Post</button>
-            <div id="blog-posts-list">
-                <div class="blog-post">
-                    <h3>My Journey as YallaY</h3>
-                    <p>Started creating amazing projects—stay tuned for more updates!</p>
-                    <div class="comments">
-                        <input type="text" class="input-field comment-input" placeholder="Add a comment...">
-                        <button class="button" onclick="addComment(this)">Comment</button>
-                        <div class="comment-list"></div>
-                    </div>
-                    <span class="reactions"><button onclick="addReaction(this, '👍')">👍 <span>0</span></button><button onclick="addReaction(this, '🔥')">🔥 <span>0</span></button></span>
-                </div>
-                <div class="blog-post">
-                    <h3>Future Ideas</h3>
-                    <p>Thinking about a new game or app—let me know what you think!</p>
-                    <div class="comments">
-                        <input type="text" class="input-field comment-input" placeholder="Add a comment...">
-                        <button class="button" onclick="addComment(this)">Comment</button>
-                        <div class="comment-list"></div>
-                    </div>
-                    <span class="reactions"><button onclick="addReaction(this, '👍')">👍 <span>0</span></button><button onclick="addReaction(this, '🔥')">🔥 <span>0</span></button></span>
-                </div>
-            </div>
+            <div id="blog-posts-list"></div>
             <button class="button" onclick="showPage('home')">Back</button>
         </div>
         <div id="new-blog-form" class="container hidden">
@@ -393,7 +374,7 @@
 
         <div id="leaderboard" class="hidden">
             <h3>Top Creators</h3>
-            <p>Top Creator: <span id="top-creator">N/A</span> - <span id="top-projects">0</span> Projects</p>
+            <ul id="top-creators-list"></ul>
         </div>
 
         <div id="chat" class="hidden">
@@ -401,7 +382,12 @@
             <div id="chat-box"></div>
             <div id="typing-indicator" class="hidden">Someone is typing...</div>
             <input type="text" id="chat-input" class="input-field" placeholder="Type a message... (:smile: for 😊)">
+            <button class="button" onclick="toggleEmotePicker()" style="padding: 10px;">😊</button>
             <button class="button" onclick="sendChat()">Send</button>
+            <div id="emote-picker" class="container hidden" style="position: absolute; bottom: 80px; right: 20px; width: 200px;">
+                <h3>Emotes</h3>
+                <div id="emote-list" style="display: flex; flex-wrap: wrap; gap: 5px;"></div>
+            </div>
         </div>
 
         <div id="updates" class="hidden">
@@ -452,6 +438,17 @@
         let currentUser = localStorage.getItem('currentUser') || null;
         let userData = JSON.parse(localStorage.getItem('userData')) || {};
         let currentTheme = localStorage.getItem('userTheme') || 'dark';
+        let siteData = JSON.parse(localStorage.getItem('siteData')) || {
+            chatMessages: [],
+            projects: [
+                { title: "Laser Tag", desc: "An roblox game i made but also there is an website!", category: "Games", creator: "Halaldeveloper", collab: false, reactions: { '👍': 0, '🔥': 0 } },
+                { title: "SparkAt", desc: "A blazing-fast AI chat igniting creativity and conversation!", category: "AI", creator: "Halaldeveloper", collab: false, reactions: { '👍': 0, '🔥': 0 } }
+            ],
+            blogPosts: [
+                { title: "My Journey as YallaY", content: "Started creating amazing projects—stay tuned for more updates!", creator: "Halaldeveloper", comments: [], reactions: { '👍': 0, '🔥': 0 } },
+                { title: "Future Ideas", content: "Thinking about a new game or app—let me know what you think!", creator: "Halaldeveloper", comments: [], reactions: { '👍': 0, '🔥': 0 } }
+            ]
+        };
         const ownerUsername = "Halaldeveloper";
         const fakeUsers = ["SparkAt", "LaserLad", "CodeMaster", "YallaFan"];
         const challenges = [
@@ -459,12 +456,17 @@
             { text: "Create a project", action: "project", xp: 50 },
             { text: "Write a blog post", action: "blog", xp: 30 }
         ];
+        const emotes = ['😊', '🔥', '🚀', '👍', '🎉', '🤓'];
 
         const cursor = document.getElementById('cursor');
         function updateCursor(e) {
             cursor.style.left = e.pageX - 20 + 'px';
             cursor.style.top = e.pageY - 20 + 'px';
             cursor.style.display = 'block';
+            if (userData[currentUser]?.cursorColor) {
+                cursor.style.background = `${userData[currentUser].cursorColor} url('YallaYIcon.png') no-repeat center`;
+                cursor.style.backgroundSize = 'contain';
+            }
         }
         document.addEventListener('mousemove', updateCursor);
         document.querySelectorAll('a, button').forEach(item => {
@@ -483,6 +485,7 @@
                 updateProfile(currentUser);
                 updateNotifications();
             }
+            loadSiteData();
             particlesJS("particles-js", {
                 particles: { number: { value: 50 }, color: { value: "#ff4040" }, move: { speed: 2 } }
             });
@@ -509,6 +512,9 @@
             document.body.appendChild(cursor);
             document.addEventListener('mousemove', updateCursor);
             if (page === 'profile') logProfileVisitor();
+            if (page === 'projects') loadProjects();
+            if (page === 'blog') loadBlogPosts();
+            if (page === 'chat') loadChatMessages();
         }
 
         function login() {
@@ -571,7 +577,10 @@
                         notifications: [],
                         profileTheme: '#ff4040',
                         status: '',
-                        visitors: []
+                        visitors: [],
+                        achieved: {},
+                        collabRequests: [],
+                        cursorColor: '#ff4040'
                     };
                     localStorage.setItem('userData', JSON.stringify(userData));
                     playSound('fanfare');
@@ -622,18 +631,42 @@
             }
             drawStatsGraph(username);
             updateVisitorLog();
+            if (userData[username].collabRequests && userData[username].collabRequests.length > 0) {
+                const requestsDiv = document.createElement("div");
+                requestsDiv.innerHTML = `<h3>Collab Requests</h3><ul>${userData[username].collabRequests.map(req => `<li>${req.requester} - ${req.project}</li>`).join('')}</ul>`;
+                document.getElementById("profile").appendChild(requestsDiv);
+            } else if (document.getElementById("profile").querySelector("h3")?.textContent === "Collab Requests") {
+                document.getElementById("profile").removeChild(document.getElementById("profile").lastChild);
+            }
         }
 
         function updateAchievements(username) {
-            const achievementsDiv = document.getElementById("achievements");
-            achievementsDiv.innerHTML = "";
+            const achievementsWall = document.getElementById("achievements-wall");
+            achievementsWall.innerHTML = "";
             const projects = userData[username].projectsCreated;
             const blogPosts = userData[username].blogPosts;
-            if (projects >= 3) achievementsDiv.innerHTML += '<div class="achievement">🏆 Creator: 3+ Projects</div>';
-            if (projects >= 5) achievementsDiv.innerHTML += '<div class="achievement">🔥 Mastermind: 5+ Projects</div>';
-            if (blogPosts >= 3) achievementsDiv.innerHTML += '<div class="achievement">📝 Blogger: 3+ Posts</div>';
-            if (blogPosts >= 5) achievementsDiv.innerHTML += '<div class="achievement">🌟 Storyteller: 5+ Posts</div>';
-            if (achievementsDiv.innerHTML) playSound('fanfare');
+            const achievements = [
+                { name: "Creator", desc: "3+ Projects", icon: "🏆", req: projects >= 3 },
+                { name: "Mastermind", desc: "5+ Projects", icon: "🔥", req: projects >= 5 },
+                { name: "Blogger", desc: "3+ Posts", icon: "📝", req: blogPosts >= 3 },
+                { name: "Storyteller", desc: "5+ Posts", icon: "🌟", req: blogPosts >= 5 }
+            ];
+            userData[username].achieved = userData[username].achieved || {};
+            achievements.forEach(ach => {
+                if (ach.req && !userData[username].achieved[ach.name]) {
+                    userData[username].achieved[ach.name] = new Date().toLocaleString();
+                    saveUserData();
+                    addNotification(`Achievement Unlocked: ${ach.name}!`);
+                }
+                const unlocked = userData[username].achieved[ach.name];
+                achievementsWall.innerHTML += `
+                    <div class="achievement" style="opacity: ${unlocked ? 1 : 0.5};">
+                        <h4>${ach.icon} ${ach.name}</h4>
+                        <p>${ach.desc}</p>
+                        <p>${unlocked ? `Unlocked: ${unlocked}` : "Locked"}</p>
+                    </div>`;
+            });
+            if (Object.keys(userData[username].achieved).length > 0) playSound('fanfare');
         }
 
         function setTheme(theme) {
@@ -662,64 +695,94 @@
         }
 
         function updateLeaderboard() {
-            let topCreator = "N/A";
-            let topProjects = 0;
-            for (let user in userData) {
-                if (userData[user].projectsCreated > topProjects) {
-                    topProjects = userData[user].projectsCreated;
-                    topCreator = user;
-                }
-            }
-            document.getElementById("top-creator").innerText = topCreator;
-            document.getElementById("top-projects").innerText = topProjects;
+            const topCreators = Object.entries(userData)
+                .sort((a, b) => b[1].projectsCreated - a[1].projectsCreated)
+                .slice(0, 5);
+            document.getElementById("top-creators-list").innerHTML = topCreators.map(([user, data]) => 
+                `<li>${user} - Projects: ${data.projectsCreated} - XP: ${data.xp || 0} - Followers: ${data.followers.length}</li>`
+            ).join('');
         }
 
         function searchProjectsAndPlayers() {
-            const query = document.getElementById("search-bar").value.toLowerCase();
-            if (query && isLoggedIn) {
-                const projects = document.querySelectorAll('.project-card');
-                projects.forEach(project => {
-                    const title = project.querySelector('h3').innerText.toLowerCase();
-                    project.classList.toggle('hidden', !title.includes(query));
-                });
-                const playerResults = Object.keys(userData).filter(username => 
-                    username.toLowerCase().includes(query) && username !== currentUser
-                );
-                const projectList = document.getElementById("project-list");
-                const existingResults = document.getElementById("player-search-results");
-                if (existingResults) existingResults.remove();
-                if (playerResults.length > 0) {
-                    const resultsDiv = document.createElement("div");
-                    resultsDiv.id = "player-search-results";
-                    resultsDiv.innerHTML = "<h3>Players Found</h3>" + playerResults.map(user => 
-                        `<div class="project-card"><h3>${user}${userData[user].status ? ` (${userData[user].status})` : ''}</h3><p>Projects: ${userData[user].projectsCreated}</p><button class="button" onclick="followUser('${user}')">Follow</button></div>`
-                    ).join('');
-                    projectList.appendChild(resultsDiv);
-                }
+            const query = document.getElementById("search-bar").value.toLowerCase().trim();
+            if (!isLoggedIn || !query) return;
+            const projects = document.querySelectorAll('.project-card');
+            projects.forEach(project => {
+                const title = project.querySelector('h3').innerText.toLowerCase();
+                project.classList.toggle('hidden', !title.includes(query));
+            });
+            const playerResults = Object.keys(userData).filter(username => 
+                username.toLowerCase().includes(query) && username !== currentUser
+            );
+            const projectList = document.getElementById("project-list");
+            const existingResults = document.getElementById("player-search-results");
+            if (existingResults) existingResults.remove();
+            if (playerResults.length > 0) {
+                const resultsDiv = document.createElement("div");
+                resultsDiv.id = "player-search-results";
+                resultsDiv.innerHTML = "<h3>Players Found</h3>" + playerResults.map(user => 
+                    `<div class="project-card"><h3>${user}${userData[user].status ? ` (${userData[user].status})` : ''}</h3><p>Projects: ${userData[user].projectsCreated}</p><button class="button" onclick="followUser('${user}')">Follow</button></div>`
+                ).join('');
+                projectList.appendChild(resultsDiv);
             }
         }
 
+        function loadChatMessages() {
+            const chatBox = document.getElementById("chat-box");
+            chatBox.innerHTML = siteData.chatMessages.map(msg => 
+                `<p><b>${msg.user}</b>${userData[msg.user]?.status ? ` (${userData[msg.user].status})` : ''} [${msg.timestamp}]: ${msg.text} <span class="reactions"><button onclick="addReaction(this, '👍')">👍 <span>${msg.reactions['👍'] || 0}</span></button><button onclick="addReaction(this, '🔥')">🔥 <span>${msg.reactions['🔥'] || 0}</span></button></span></p>`
+            ).join('');
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
         function sendChat() {
-            const message = document.getElementById("chat-input").value;
+            const message = document.getElementById("chat-input").value.trim();
             if (message && isLoggedIn) {
                 document.getElementById("typing-indicator").classList.remove("hidden");
                 setTimeout(() => {
                     document.getElementById("typing-indicator").classList.add("hidden");
                     const timestamp = new Date().toLocaleString();
                     const formattedMessage = message.replace(':smile:', '😊').replace(':fire:', '🔥');
-                    const status = userData[currentUser].status ? ` (${userData[currentUser].status})` : "";
-                    document.getElementById("chat-box").innerHTML += `<p><b>${currentUser}</b>${status} [${timestamp}]: ${formattedMessage} <span class="reactions"><button onclick="addReaction(this, '👍')">👍 <span>0</span></button><button onclick="addReaction(this, '🔥')">🔥 <span>0</span></button></span></p>`;
+                    const chatMessage = { user: currentUser, timestamp, text: formattedMessage, reactions: { '👍': 0, '🔥': 0 } };
+                    siteData.chatMessages.push(chatMessage);
+                    saveSiteData();
+                    loadChatMessages();
                     document.getElementById("chat-input").value = "";
                     addXP(5);
                     playSound('click');
-                    const chatBox = document.getElementById("chat-box");
-                    chatBox.scrollTop = chatBox.scrollHeight;
                     addNotification("You sent a chat message!");
                     const challenge = JSON.parse(localStorage.getItem("dailyChallenge"));
-                    if (challenge.action === "chat") localStorage.setItem("challengeCompleted", "true");
+                    if (challenge?.action === "chat") localStorage.setItem("challengeCompleted", "true");
                     updateDailyChallenge();
                 }, 1000);
             }
+        }
+
+        function loadProjects() {
+            const projectList = document.getElementById("project-list");
+            projectList.innerHTML = siteData.projects.map(project => `
+                <div class="project-card" data-title="${project.title}" data-category="${project.category}">
+                    <h3>${project.title}</h3>
+                    <p>${project.desc}${project.collab ? ' <span style="color: #ff9900">[Open for Collab]</span>' : ''}</p>
+                    <button class="button" onclick="showProjectPreview('${project.title}')">Preview</button>
+                    ${project.collab ? `<button class="button" onclick="messageCreator('${project.creator}')">Message</button><button class="button" onclick="requestCollab('${project.title}', '${project.creator}')">Request Collab</button>` : ''}
+                    <span class="reactions"><button onclick="addReaction(this, '👍')">👍 <span>${project.reactions['👍'] || 0}</span></button><button onclick="addReaction(this, '🔥')">🔥 <span>${project.reactions['🔥'] || 0}</span></button></span>
+                </div>`).join('');
+        }
+
+        function loadBlogPosts() {
+            const blogList = document.getElementById("blog-posts-list");
+            blogList.innerHTML = siteData.blogPosts.map(post => `
+                <div class="blog-post">
+                    <h3>${post.title}</h3>
+                    <p>${post.content}</p>
+                    <div class="comments">
+                        <input type="text" class="input-field comment-input" placeholder="Add a comment...">
+                        <button class="button" onclick="addComment(this, '${post.title}')">Comment</button>
+                        <div class="comment-list">${post.comments.map(c => `<p><b>${c.user}</b>: ${c.text}</p>`).join('')}</div>
+                    </div>
+                    <span class="reactions"><button onclick="addReaction(this, '👍')">👍 <span>${post.reactions['👍'] || 0}</span></button><button onclick="addReaction(this, '🔥')">🔥 <span>${post.reactions['🔥'] || 0}</span></button></span>
+                </div>`).join('');
         }
 
         function updateUpdates(username) {
@@ -741,20 +804,16 @@
             alert("Stats refreshed! (Simulated)");
         }
 
-        function showProjectPreview(projectName) {
-            const previewContent = document.getElementById("preview-content");
-            if (projectName === "Project 1") {
-                previewContent.innerHTML = `<p>Laser Tag Preview</p><img src="Preview_1.png" class="preview_1" alt="Project 1 Preview">`;
-            } else if (projectName === "Project 2") {
-                previewContent.innerHTML = `<p>SparkAt Preview: Meet SparkAt, a next-gen AI chat that ignites your imagination with lightning-fast responses and a fiery passion for conversation!</p><img src="Preview_2.png" class="preview_2" alt="Project 2 Preview">`;
-            } else {
-                const projectCard = document.querySelector(`.project-card[data-title="${projectName}"]`);
-                if (projectCard) {
-                    const desc = projectCard.querySelector('p').innerText;
-                    previewContent.innerHTML = `<p>${projectName} Preview</p><p>${desc}</p><p>(No image available)</p>`;
-                }
+        function showProjectPreview(projectTitle) {
+            const project = siteData.projects.find(p => p.title === projectTitle);
+            if (project) {
+                document.getElementById("preview-content").innerHTML = `
+                    <p>${project.title} Preview</p>
+                    <p>${project.desc}</p>
+                    ${project.title === "Laser Tag" ? '<img src="Preview_1.png" class="preview_1" alt="Laser Tag Preview">' : 
+                     project.title === "SparkAt" ? '<img src="Preview_2.png" class="preview_2" alt="SparkAt Preview">' : '<p>(No image available)</p>'}`;
+                showPage('project-preview');
             }
-            showPage('project-preview');
         }
 
         function hideProjectPreview() {
@@ -763,44 +822,48 @@
         }
 
         function sendContactMessage() {
-            const message = document.getElementById("contact-message").value;
+            const message = document.getElementById("contact-message").value.trim();
             if (message && isLoggedIn) {
                 playSound('fanfare');
                 alert("Message sent to YallaY! (Simulated)");
                 document.getElementById("contact-message").value = "";
                 addNotification("You sent a contact message!");
-            } else {
-                alert("Please log in and enter a message.");
+            } else if (!isLoggedIn) {
+                alert("Please log in to send a message.");
             }
         }
 
         function updateAvatar() {
-            const url = document.getElementById("avatar-url").value;
+            const url = document.getElementById("avatar-url").value.trim();
             userData[currentUser].avatar = url || 'default-avatar.png';
             document.getElementById("avatar-display").src = userData[currentUser].avatar;
             saveUserData();
             playSound('click');
             addNotification("You updated your avatar!");
         }
+
         function updateBio() {
             userData[currentUser].bio = document.getElementById("bio").value;
             saveUserData();
             playSound('click');
             addNotification("You updated your bio!");
         }
+
         function updateLevel() {
             const xp = userData[currentUser].xp || 0;
             const level = Math.floor(xp / 100) + 1;
             document.getElementById("user-xp").innerText = xp;
             document.getElementById("user-level").innerText = level;
         }
+
         function addXP(points) {
             userData[currentUser].xp = (userData[currentUser].xp || 0) + points;
             saveUserData();
             updateLevel();
         }
+
         function updateStatus() {
-            const status = document.getElementById("user-status").value;
+            const status = document.getElementById("user-status").value.trim();
             userData[currentUser].status = status;
             saveUserData();
             playSound('click');
@@ -815,11 +878,11 @@
             const projects = userData[username].projectsCreated || 0;
             const blogs = userData[username].blogPosts || 0;
             ctx.fillStyle = "#ff4040";
-            ctx.fillRect(20, 150 - xp / 2, 50, xp / 2); // XP bar
+            ctx.fillRect(20, 150 - xp / 2, 50, xp / 2);
             ctx.fillStyle = "#ff9900";
-            ctx.fillRect(100, 150 - projects * 10, 50, projects * 10); // Projects bar
+            ctx.fillRect(100, 150 - projects * 10, 50, projects * 10);
             ctx.fillStyle = "#cc3333";
-            ctx.fillRect(180, 150 - blogs * 10, 50, blogs * 10); // Blogs bar
+            ctx.fillRect(180, 150 - blogs * 10, 50, blogs * 10);
             ctx.fillStyle = "white";
             ctx.font = "12px Orbitron";
             ctx.fillText("XP", 30, 140);
@@ -828,31 +891,32 @@
         }
 
         function submitProject() {
-            const title = document.getElementById("project-title").value;
-            const desc = document.getElementById("project-desc").value;
+            const title = document.getElementById("project-title").value.trim();
+            const desc = document.getElementById("project-desc").value.trim();
             const collab = document.getElementById("collab-open").checked;
             if (title && desc && isLoggedIn) {
                 userData[currentUser].projectsCreated++;
                 addXP(50);
                 const category = prompt("Enter project category (Games, AI, Other):") || "Other";
-                const projectHTML = `
-                    <div class="project-card" data-title="${title}" data-category="${category}">
-                        <h3>${title}</h3>
-                        <p>${desc}${collab ? ' <span style="color: #ff9900">[Open for Collab]</span>' : ''}</p>
-                        <button class="button" onclick="showProjectPreview('${title}')">Preview</button>
-                        ${collab ? `<button class="button" onclick="messageCreator('${currentUser}')">Message</button>` : ''}
-                        <span class="reactions"><button onclick="addReaction(this, '👍')">👍 <span>0</span></button><button onclick="addReaction(this, '🔥')">🔥 <span>0</span></button></span>
-                    </div>`;
-                document.getElementById("project-list").innerHTML += projectHTML;
+                const project = {
+                    title,
+                    desc,
+                    category,
+                    creator: currentUser,
+                    collab,
+                    reactions: { '👍': 0, '🔥': 0 }
+                };
+                siteData.projects.push(project);
+                saveSiteData();
                 addNotification(`You created a new project: ${title}`);
-                saveUserData();
                 playSound('fanfare');
                 const challenge = JSON.parse(localStorage.getItem("dailyChallenge"));
-                if (challenge.action === "project") localStorage.setItem("challengeCompleted", "true");
+                if (challenge?.action === "project") localStorage.setItem("challengeCompleted", "true");
                 updateDailyChallenge();
                 showPage('projects');
             }
         }
+
         function messageCreator(username) {
             const message = prompt(`Send a message to ${username}:`);
             if (message) {
@@ -860,6 +924,7 @@
                 addNotification(`You messaged ${username}!`);
             }
         }
+
         function filterProjects() {
             const filter = document.getElementById("project-filter").value;
             document.querySelectorAll('.project-card').forEach(card => {
@@ -868,42 +933,41 @@
             });
         }
 
-        function addComment(button) {
+        function addComment(button, blogTitle) {
             const input = button.previousElementSibling;
-            const comment = input.value;
+            const comment = input.value.trim();
             if (comment && isLoggedIn) {
-                const commentList = button.nextElementSibling;
-                commentList.innerHTML += `<p><b>${currentUser}</b>: ${comment}</p>`;
-                input.value = "";
-                addXP(10);
-                playSound('click');
-                addNotification("You added a comment!");
+                const blogPost = siteData.blogPosts.find(post => post.title === blogTitle);
+                if (blogPost) {
+                    blogPost.comments.push({ user: currentUser, text: comment });
+                    saveSiteData();
+                    loadBlogPosts();
+                    addXP(10);
+                    playSound('click');
+                    addNotification("You added a comment!");
+                }
             }
         }
 
         function submitBlogPost() {
-            const title = document.getElementById("blog-title").value;
-            const content = document.getElementById("blog-content").value;
+            const title = document.getElementById("blog-title").value.trim();
+            const content = document.getElementById("blog-content").value.trim();
             if (title && content && isLoggedIn) {
                 userData[currentUser].blogPosts++;
                 addXP(20);
-                const blogHTML = `
-                    <div class="blog-post">
-                        <h3>${title}</h3>
-                        <p>${content}</p>
-                        <div class="comments">
-                            <input type="text" class="input-field comment-input" placeholder="Add a comment...">
-                            <button class="button" onclick="addComment(this)">Comment</button>
-                            <div class="comment-list"></div>
-                        </div>
-                        <span class="reactions"><button onclick="addReaction(this, '👍')">👍 <span>0</span></button><button onclick="addReaction(this, '🔥')">🔥 <span>0</span></button></span>
-                    </div>`;
-                document.getElementById("blog-posts-list").innerHTML += blogHTML;
+                const blogPost = {
+                    title,
+                    content,
+                    creator: currentUser,
+                    comments: [],
+                    reactions: { '👍': 0, '🔥': 0 }
+                };
+                siteData.blogPosts.push(blogPost);
+                saveSiteData();
                 addNotification(`You posted a new blog: ${title}`);
-                saveUserData();
                 playSound('fanfare');
                 const challenge = JSON.parse(localStorage.getItem("dailyChallenge"));
-                if (challenge.action === "blog") localStorage.setItem("challengeCompleted", "true");
+                if (challenge?.action === "blog") localStorage.setItem("challengeCompleted", "true");
                 updateDailyChallenge();
                 showPage('blog');
             }
@@ -918,6 +982,7 @@
                 addNotification(`You followed ${targetUser}!`);
             }
         }
+
         function showFollowers() {
             alert(`Followers: ${userData[currentUser].followers.join(", ") || "None"}`);
         }
@@ -927,7 +992,7 @@
                 alert("Only the owner can ban users.");
                 return;
             }
-            const username = document.getElementById("ban-username").value;
+            const username = document.getElementById("ban-username").value.trim();
             if (username && userData[username] && username !== ownerUsername) {
                 userData[username].isBanned = true;
                 saveUserData();
@@ -938,12 +1003,13 @@
                 addNotification(`You banned ${username}!`);
             }
         }
+
         function unbanUser() {
             if (currentUser !== ownerUsername) {
                 alert("Only the owner can unban users.");
                 return;
             }
-            const username = document.getElementById("unban-username").value;
+            const username = document.getElementById("unban-username").value.trim();
             if (username && userData[username]) {
                 userData[username].isBanned = false;
                 saveUserData();
@@ -954,6 +1020,7 @@
                 addNotification(`You unbanned ${username}!`);
             }
         }
+
         function updateUserManagement() {
             const userList = document.getElementById("user-list");
             userList.innerHTML = Object.keys(userData).map(user => `
@@ -963,6 +1030,7 @@
                 </div>
             `).join('');
         }
+
         function toggleBan(user) {
             userData[user].isBanned = !userData[user].isBanned;
             saveUserData();
@@ -1061,9 +1129,22 @@
 
         function addReaction(button, emoji) {
             const counter = button.querySelector("span");
-            counter.innerText = parseInt(counter.innerText) + 1;
-            playSound('click');
-            addNotification(`You reacted with ${emoji}!`);
+            const parent = button.closest('.project-card') || button.closest('.blog-post') || button.closest('p');
+            let target;
+            if (parent.classList.contains('project-card')) {
+                target = siteData.projects.find(p => p.title === parent.dataset.title);
+            } else if (parent.classList.contains('blog-post')) {
+                target = siteData.blogPosts.find(p => p.title === parent.querySelector('h3').innerText);
+            } else {
+                target = siteData.chatMessages.find(m => m.timestamp === parent.textContent.match(/\[(.*?)\]/)[1]);
+            }
+            if (target) {
+                target.reactions[emoji] = (target.reactions[emoji] || 0) + 1;
+                counter.innerText = target.reactions[emoji];
+                saveSiteData();
+                playSound('click');
+                addNotification(`You reacted with ${emoji}!`);
+            }
         }
 
         function logProfileVisitor() {
@@ -1081,6 +1162,56 @@
             list.innerHTML = userData[currentUser].visitors.map(v => `<li>${v}</li>`).join('');
         }
 
+        function toggleEmotePicker() {
+            const picker = document.getElementById("emote-picker");
+            picker.classList.toggle("hidden");
+            if (!picker.classList.contains("hidden")) {
+                const list = document.getElementById("emote-list");
+                list.innerHTML = emotes.map(emote => 
+                    `<button style="font-size: 20px; padding: 5px;" onclick="addEmote('${emote}')">${emote}</button>`
+                ).join('');
+            }
+        }
+
+        function addEmote(emote) {
+            const input = document.getElementById("chat-input");
+            input.value += emote;
+            document.getElementById("emote-picker").classList.add("hidden");
+            input.focus();
+        }
+
+        function requestCollab(projectTitle, creator) {
+            if (currentUser === creator) {
+                alert("You can't request to collab on your own project!");
+                return;
+            }
+            userData[creator].collabRequests = userData[creator].collabRequests || [];
+            userData[creator].collabRequests.push({ project: projectTitle, requester: currentUser });
+            saveUserData();
+            addNotification(`You sent a collab request for ${projectTitle} to ${creator}!`);
+            alert("Collaboration request sent! (Simulated)");
+            userData[creator].notifications.unshift(`${new Date().toLocaleString()}: ${currentUser} requested to collab on ${projectTitle}`);
+            saveUserData();
+        }
+
+        function setSiteTheme(theme) {
+            let colors;
+            switch (theme) {
+                case 'fire': colors = { primary: '#ff4040', secondary: '#ff9900', bg: '#121212' }; break;
+                case 'ice': colors = { primary: '#40c4ff', secondary: '#b3e5fc', bg: '#e0f7fa' }; break;
+                case 'neon': colors = { primary: '#00e676', secondary: '#ffea00', bg: '#0d1b2a' }; break;
+            }
+            document.body.style.background = `linear-gradient(45deg, ${colors.bg}, ${colors.primary}, ${colors.secondary})`;
+            document.querySelectorAll('.button').forEach(btn => {
+                btn.style.background = colors.primary;
+                btn.style.boxShadow = `0 0 10px ${colors.primary}`;
+            });
+            userData[currentUser].siteTheme = theme;
+            saveUserData();
+            playSound('click');
+            addNotification(`You switched to the ${theme} theme!`);
+        }
+
         function ensureUserData(username) {
             userData[username] = {
                 ...userData[username],
@@ -1091,22 +1222,42 @@
                 notifications: userData[username].notifications || [],
                 profileTheme: userData[username].profileTheme || '#ff4040',
                 status: userData[username].status || '',
-                visitors: userData[username].visitors || []
+                visitors: userData[username].visitors || [],
+                achieved: userData[username].achieved || {},
+                collabRequests: userData[username].collabRequests || [],
+                cursorColor: userData[username].cursorColor || '#ff4040',
+                projectsCreated: userData[username].projectsCreated || 0,
+                blogPosts: userData[username].blogPosts || 0,
+                history: userData[username].history || [],
+                isBanned: userData[username].isBanned || false
             };
             saveUserData();
+        }
+
+        function saveSiteData() {
+            localStorage.setItem('siteData', JSON.stringify(siteData));
+        }
+
+        function loadSiteData() {
+            loadProjects();
+            loadBlogPosts();
+            loadChatMessages();
         }
 
         function saveSettings() {
             localStorage.setItem('userTheme', currentTheme);
         }
+
         function saveUserData() {
             localStorage.setItem('userData', JSON.stringify(userData));
         }
+
         function saveLoginState() {
             localStorage.setItem('isLoggedIn', isLoggedIn);
             localStorage.setItem('currentUser', currentUser);
             saveSettings();
         }
+
         function applySavedSettings() {
             const savedTheme = localStorage.getItem('userTheme');
             if (savedTheme) {
@@ -1114,9 +1265,12 @@
                 if (savedTheme !== 'dark') document.body.classList.add(savedTheme);
                 currentTheme = savedTheme;
             }
+            if (userData[currentUser]?.siteTheme) setSiteTheme(userData[currentUser].siteTheme);
         }
+
         window.addEventListener('beforeunload', () => {
             saveLoginState();
+            saveSiteData();
         });
     </script>
 </body>
