@@ -124,9 +124,9 @@
             background: #444;
             padding: 8px 12px;
             margin: 5px;
-            border-radius: 15px; /* Badge style */
+            border-radius: 15px;
             border: 1px solid #ff4040;
-            display: inline-block; /* Inline badges */
+            display: inline-block;
             animation: pulse 2s infinite;
         }
 
@@ -143,6 +143,12 @@
             padding: 10px;
             border-radius: 5px;
             margin-bottom: 10px;
+        }
+
+        #typing-indicator {
+            font-size: 12px;
+            color: #ff9900;
+            margin: 5px 0;
         }
 
         .project-card {
@@ -205,6 +211,8 @@
         .comments { margin-top: 10px; }
         .comment-list p { font-size: 12px; margin: 5px 0; }
         #particles-js { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+        .reactions { margin-left: 10px; }
+        .reactions button { padding: 5px; font-size: 12px; background: none; border: none; cursor: pointer; }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
@@ -219,7 +227,6 @@
             <h1>YallaY</h1>
         </div>
         <input type="text" class="search-bar" id="search-bar" placeholder="Search projects or players..." onkeyup="searchProjectsAndPlayers()">
-        <!-- Feature 1: Notifications -->
         <button class="button" onclick="toggleNotifications()" style="padding: 10px;">🔔 <span id="notification-count">0</span></button>
         <div id="notifications" class="container hidden" style="position: absolute; right: 20px; top: 80px; width: 300px; max-height: 300px; overflow-y: auto;">
             <h3>Notifications</h3>
@@ -230,8 +237,13 @@
     <main id="content">
         <section id="home">
             <h2>Welcome to YallaY’s World!</h2>
-            <!-- Feature 2: Live Visitor Counter -->
             <p>Live Visitors: <span id="visitor-count">0</span></p>
+            <!-- Feature 1: Daily Challenge -->
+            <div id="daily-challenge" class="container">
+                <h3>Daily Challenge</h3>
+                <p id="challenge-text">Loading...</p>
+                <button class="button" onclick="completeChallenge()">Complete</button>
+            </div>
             <button class="button" id="login-btn" title="Click to log in" onclick="playSound('click'); showPage('login-form')">Login</button>
             <button class="button" id="register-btn" title="Click to register" onclick="playSound('click'); showPage('register-form')">Register</button>
             <button class="button hidden" id="profile-btn" onclick="playSound('click'); showPage('profile')">Profile</button>
@@ -267,11 +279,21 @@
             <button class="button" onclick="updateAvatar()">Update Avatar</button>
             <textarea id="bio" class="input-field" placeholder="Your bio..."></textarea>
             <button class="button" onclick="updateBio()">Save Bio</button>
+            <!-- Feature 2: User Status -->
+            <input type="text" id="user-status" class="input-field" placeholder="Set your status (max 20 chars)" maxlength="20">
+            <button class="button" onclick="updateStatus()">Update Status</button>
             <p>Level: <span id="user-level">1</span> (XP: <span id="user-xp">0</span>)</p>
             <p>Projects Created: <span id="projects-created">0</span></p>
             <p>Blog Posts Written: <span id="blog-posts">0</span></p>
             <button class="button" onclick="showFollowers()">Followers: <span id="follower-count">0</span></button>
-            <div id="achievements"></div> <!-- Feature 5: Badges styled in CSS -->
+            <div id="achievements"></div>
+            <!-- Profile Stats Graph -->
+            <canvas id="stats-graph" width="300" height="150"></canvas>
+            <!-- Feature 4: Profile Visitor Log -->
+            <div id="visitor-log">
+                <h3>Recent Visitors</h3>
+                <ul id="visitor-list"></ul>
+            </div>
             <button class="button" onclick="fetchRealStats()">Refresh Stats</button>
             <button class="button" onclick="logout()">Logout</button>
         </div>
@@ -281,10 +303,14 @@
             <button class="button" onclick="setTheme('dark')">Dark Mode</button>
             <button class="button" onclick="setTheme('light')">Light Mode</button>
             <button class="button" onclick="setTheme('yalla-orange')">Yalla Orange</button>
+            <input type="color" id="profile-color" class="input-field" value="#ff4040">
+            <button class="button" onclick="setProfileTheme()">Set Profile Theme</button>
+            <!-- Sound Effect Toggle -->
+            <input type="checkbox" id="sound-toggle" checked>
+            <label for="sound-toggle">Enable Sound Effects</label>
             <button class="button" onclick="showPage('home')">Back</button>
         </div>
 
-        <!-- Feature 3: Project Categories & Filter -->
         <div id="projects" class="container hidden">
             <h2>My Projects</h2>
             <select id="project-filter" class="input-field" onchange="filterProjects()">
@@ -298,11 +324,14 @@
                     <h3>Laser Tag</h3>
                     <p>An roblox game i made but also there is an website!</p>
                     <button class="button" onclick="showProjectPreview('Project 1')">Preview</button>
+                    <!-- Feature 3: Reaction Emojis -->
+                    <span class="reactions"><button onclick="addReaction(this, '👍')">👍 <span>0</span></button><button onclick="addReaction(this, '🔥')">🔥 <span>0</span></button></span>
                 </div>
                 <div class="project-card" data-category="AI">
                     <h3>SparkAt</h3>
                     <p>A blazing-fast AI chat igniting creativity and conversation!</p>
                     <button class="button" onclick="showProjectPreview('Project 2')">Preview</button>
+                    <span class="reactions"><button onclick="addReaction(this, '👍')">👍 <span>0</span></button><button onclick="addReaction(this, '🔥')">🔥 <span>0</span></button></span>
                 </div>
             </div>
             <button class="button" onclick="showPage('new-project-form')">New Project</button>
@@ -320,6 +349,7 @@
 
         <div id="blog" class="container hidden">
             <h2>YallaY’s Blog</h2>
+            <button class="button" onclick="showPage('new-blog-form')">New Blog Post</button>
             <div id="blog-posts-list">
                 <div class="blog-post">
                     <h3>My Journey as YallaY</h3>
@@ -329,6 +359,7 @@
                         <button class="button" onclick="addComment(this)">Comment</button>
                         <div class="comment-list"></div>
                     </div>
+                    <span class="reactions"><button onclick="addReaction(this, '👍')">👍 <span>0</span></button><button onclick="addReaction(this, '🔥')">🔥 <span>0</span></button></span>
                 </div>
                 <div class="blog-post">
                     <h3>Future Ideas</h3>
@@ -338,9 +369,17 @@
                         <button class="button" onclick="addComment(this)">Comment</button>
                         <div class="comment-list"></div>
                     </div>
+                    <span class="reactions"><button onclick="addReaction(this, '👍')">👍 <span>0</span></button><button onclick="addReaction(this, '🔥')">🔥 <span>0</span></button></span>
                 </div>
             </div>
             <button class="button" onclick="showPage('home')">Back</button>
+        </div>
+        <div id="new-blog-form" class="container hidden">
+            <h3>Create a New Blog Post</h3>
+            <input type="text" id="blog-title" class="input-field" placeholder="Blog Title">
+            <textarea id="blog-content" class="input-field" placeholder="Content"></textarea>
+            <button class="button" onclick="submitBlogPost()">Submit</button>
+            <button class="button" onclick="showPage('blog')">Cancel</button>
         </div>
 
         <div id="contact" class="container hidden">
@@ -360,6 +399,7 @@
         <div id="chat" class="hidden">
             <h3>YallaY Chat</h3>
             <div id="chat-box"></div>
+            <div id="typing-indicator" class="hidden">Someone is typing...</div>
             <input type="text" id="chat-input" class="input-field" placeholder="Type a message... (:smile: for 😊)">
             <button class="button" onclick="sendChat()">Send</button>
         </div>
@@ -413,6 +453,12 @@
         let userData = JSON.parse(localStorage.getItem('userData')) || {};
         let currentTheme = localStorage.getItem('userTheme') || 'dark';
         const ownerUsername = "Halaldeveloper";
+        const fakeUsers = ["SparkAt", "LaserLad", "CodeMaster", "YallaFan"];
+        const challenges = [
+            { text: "Post a chat message", action: "chat", xp: 20 },
+            { text: "Create a project", action: "project", xp: 50 },
+            { text: "Write a blog post", action: "blog", xp: 30 }
+        ];
 
         const cursor = document.getElementById('cursor');
         function updateCursor(e) {
@@ -435,14 +481,15 @@
                 document.getElementById("user-name").innerText = currentUser;
                 updateUI();
                 updateProfile(currentUser);
-                updateNotifications(); // Feature 1
+                updateNotifications();
             }
             particlesJS("particles-js", {
                 particles: { number: { value: 50 }, color: { value: "#ff4040" }, move: { speed: 2 } }
             });
             if (window.matchMedia('(prefers-color-scheme: dark)').matches && !localStorage.getItem('userTheme')) setTheme('dark');
-            updateVisitorCount(); // Feature 2: Initial call
-            setInterval(updateVisitorCount, 5000); // Feature 2: Update every 5 seconds
+            updateVisitorCount();
+            setInterval(updateVisitorCount, 5000);
+            updateDailyChallenge();
         };
 
         function showPage(page) {
@@ -461,6 +508,7 @@
             updateMusicButton();
             document.body.appendChild(cursor);
             document.addEventListener('mousemove', updateCursor);
+            if (page === 'profile') logProfileVisitor();
         }
 
         function login() {
@@ -476,7 +524,7 @@
                 saveLoginState();
                 updateUI();
                 updateProfile(username);
-                updateNotifications(); // Feature 1
+                updateNotifications();
                 addNotification("You logged in as owner!");
                 showPage('home');
                 return;
@@ -495,7 +543,7 @@
                 saveLoginState();
                 updateUI();
                 updateProfile(username);
-                updateNotifications(); // Feature 1
+                updateNotifications();
                 addNotification("You logged in!");
                 showPage('home');
             } else {
@@ -520,7 +568,10 @@
                         bio: '',
                         xp: 0,
                         followers: [],
-                        notifications: []
+                        notifications: [],
+                        profileTheme: '#ff4040',
+                        status: '',
+                        visitors: []
                     };
                     localStorage.setItem('userData', JSON.stringify(userData));
                     playSound('fanfare');
@@ -559,12 +610,18 @@
             document.getElementById("blog-posts").innerText = userData[username].blogPosts || 0;
             document.getElementById("avatar-display").src = userData[username].avatar;
             document.getElementById("bio").value = userData[username].bio;
+            document.getElementById("user-status").value = userData[username].status || '';
             document.getElementById("follower-count").innerText = userData[username].followers.length;
             updateLeaderboard();
             updateAchievements(username);
             updateUpdates(username);
             updateLevel();
             if (currentUser === ownerUsername) updateUserManagement();
+            if (userData[username].profileTheme) {
+                document.getElementById("profile").style.background = `linear-gradient(45deg, #121212, ${userData[username].profileTheme}, #ff9900)`;
+            }
+            drawStatsGraph(username);
+            updateVisitorLog();
         }
 
         function updateAchievements(username) {
@@ -588,6 +645,7 @@
         }
 
         function playSound(type) {
+            if (!document.getElementById("sound-toggle").checked) return;
             const clickSound = document.getElementById('click-sound');
             const fanfareSound = document.getElementById('fanfare-sound');
             if (type === 'click') {
@@ -634,7 +692,7 @@
                     const resultsDiv = document.createElement("div");
                     resultsDiv.id = "player-search-results";
                     resultsDiv.innerHTML = "<h3>Players Found</h3>" + playerResults.map(user => 
-                        `<div class="project-card"><h3>${user}</h3><p>Projects: ${userData[user].projectsCreated}</p><button class="button" onclick="followUser('${user}')">Follow</button></div>`
+                        `<div class="project-card"><h3>${user}${userData[user].status ? ` (${userData[user].status})` : ''}</h3><p>Projects: ${userData[user].projectsCreated}</p><button class="button" onclick="followUser('${user}')">Follow</button></div>`
                     ).join('');
                     projectList.appendChild(resultsDiv);
                 }
@@ -644,15 +702,23 @@
         function sendChat() {
             const message = document.getElementById("chat-input").value;
             if (message && isLoggedIn) {
-                const timestamp = new Date().toLocaleString();
-                const formattedMessage = message.replace(':smile:', '😊').replace(':fire:', '🔥');
-                document.getElementById("chat-box").innerHTML += `<p><b>${currentUser}</b> [${timestamp}]: ${formattedMessage}</p>`;
-                document.getElementById("chat-input").value = "";
-                addXP(5);
-                playSound('click');
-                const chatBox = document.getElementById("chat-box");
-                chatBox.scrollTop = chatBox.scrollHeight;
-                addNotification("You sent a chat message!"); // Feature 1
+                document.getElementById("typing-indicator").classList.remove("hidden");
+                setTimeout(() => {
+                    document.getElementById("typing-indicator").classList.add("hidden");
+                    const timestamp = new Date().toLocaleString();
+                    const formattedMessage = message.replace(':smile:', '😊').replace(':fire:', '🔥');
+                    const status = userData[currentUser].status ? ` (${userData[currentUser].status})` : "";
+                    document.getElementById("chat-box").innerHTML += `<p><b>${currentUser}</b>${status} [${timestamp}]: ${formattedMessage} <span class="reactions"><button onclick="addReaction(this, '👍')">👍 <span>0</span></button><button onclick="addReaction(this, '🔥')">🔥 <span>0</span></button></span></p>`;
+                    document.getElementById("chat-input").value = "";
+                    addXP(5);
+                    playSound('click');
+                    const chatBox = document.getElementById("chat-box");
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                    addNotification("You sent a chat message!");
+                    const challenge = JSON.parse(localStorage.getItem("dailyChallenge"));
+                    if (challenge.action === "chat") localStorage.setItem("challengeCompleted", "true");
+                    updateDailyChallenge();
+                }, 1000);
             }
         }
 
@@ -671,7 +737,7 @@
             localStorage.setItem('userData', JSON.stringify(userData));
             updateProfile(username);
             playSound('fanfare');
-            addNotification("You refreshed your stats!"); // Feature 1
+            addNotification("You refreshed your stats!");
             alert("Stats refreshed! (Simulated)");
         }
 
@@ -702,7 +768,7 @@
                 playSound('fanfare');
                 alert("Message sent to YallaY! (Simulated)");
                 document.getElementById("contact-message").value = "";
-                addNotification("You sent a contact message!"); // Feature 1
+                addNotification("You sent a contact message!");
             } else {
                 alert("Please log in and enter a message.");
             }
@@ -714,13 +780,13 @@
             document.getElementById("avatar-display").src = userData[currentUser].avatar;
             saveUserData();
             playSound('click');
-            addNotification("You updated your avatar!"); // Feature 1
+            addNotification("You updated your avatar!");
         }
         function updateBio() {
             userData[currentUser].bio = document.getElementById("bio").value;
             saveUserData();
             playSound('click');
-            addNotification("You updated your bio!"); // Feature 1
+            addNotification("You updated your bio!");
         }
         function updateLevel() {
             const xp = userData[currentUser].xp || 0;
@@ -733,8 +799,34 @@
             saveUserData();
             updateLevel();
         }
+        function updateStatus() {
+            const status = document.getElementById("user-status").value;
+            userData[currentUser].status = status;
+            saveUserData();
+            playSound('click');
+            addNotification(`You updated your status to: ${status}`);
+        }
 
-        // Feature 3: Project Categories & Filter
+        function drawStatsGraph(username) {
+            const canvas = document.getElementById("stats-graph");
+            const ctx = canvas.getContext("2d");
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const xp = userData[username].xp || 0;
+            const projects = userData[username].projectsCreated || 0;
+            const blogs = userData[username].blogPosts || 0;
+            ctx.fillStyle = "#ff4040";
+            ctx.fillRect(20, 150 - xp / 2, 50, xp / 2); // XP bar
+            ctx.fillStyle = "#ff9900";
+            ctx.fillRect(100, 150 - projects * 10, 50, projects * 10); // Projects bar
+            ctx.fillStyle = "#cc3333";
+            ctx.fillRect(180, 150 - blogs * 10, 50, blogs * 10); // Blogs bar
+            ctx.fillStyle = "white";
+            ctx.font = "12px Orbitron";
+            ctx.fillText("XP", 30, 140);
+            ctx.fillText("Projects", 100, 140);
+            ctx.fillText("Blogs", 180, 140);
+        }
+
         function submitProject() {
             const title = document.getElementById("project-title").value;
             const desc = document.getElementById("project-desc").value;
@@ -749,11 +841,15 @@
                         <p>${desc}${collab ? ' <span style="color: #ff9900">[Open for Collab]</span>' : ''}</p>
                         <button class="button" onclick="showProjectPreview('${title}')">Preview</button>
                         ${collab ? `<button class="button" onclick="messageCreator('${currentUser}')">Message</button>` : ''}
+                        <span class="reactions"><button onclick="addReaction(this, '👍')">👍 <span>0</span></button><button onclick="addReaction(this, '🔥')">🔥 <span>0</span></button></span>
                     </div>`;
                 document.getElementById("project-list").innerHTML += projectHTML;
-                addNotification(`You created a new project: ${title}`); // Feature 1
+                addNotification(`You created a new project: ${title}`);
                 saveUserData();
                 playSound('fanfare');
+                const challenge = JSON.parse(localStorage.getItem("dailyChallenge"));
+                if (challenge.action === "project") localStorage.setItem("challengeCompleted", "true");
+                updateDailyChallenge();
                 showPage('projects');
             }
         }
@@ -761,7 +857,7 @@
             const message = prompt(`Send a message to ${username}:`);
             if (message) {
                 alert(`Message sent to ${username}: "${message}" (Simulated)`);
-                addNotification(`You messaged ${username}!`); // Feature 1
+                addNotification(`You messaged ${username}!`);
             }
         }
         function filterProjects() {
@@ -781,7 +877,35 @@
                 input.value = "";
                 addXP(10);
                 playSound('click');
-                addNotification("You added a comment!"); // Feature 1
+                addNotification("You added a comment!");
+            }
+        }
+
+        function submitBlogPost() {
+            const title = document.getElementById("blog-title").value;
+            const content = document.getElementById("blog-content").value;
+            if (title && content && isLoggedIn) {
+                userData[currentUser].blogPosts++;
+                addXP(20);
+                const blogHTML = `
+                    <div class="blog-post">
+                        <h3>${title}</h3>
+                        <p>${content}</p>
+                        <div class="comments">
+                            <input type="text" class="input-field comment-input" placeholder="Add a comment...">
+                            <button class="button" onclick="addComment(this)">Comment</button>
+                            <div class="comment-list"></div>
+                        </div>
+                        <span class="reactions"><button onclick="addReaction(this, '👍')">👍 <span>0</span></button><button onclick="addReaction(this, '🔥')">🔥 <span>0</span></button></span>
+                    </div>`;
+                document.getElementById("blog-posts-list").innerHTML += blogHTML;
+                addNotification(`You posted a new blog: ${title}`);
+                saveUserData();
+                playSound('fanfare');
+                const challenge = JSON.parse(localStorage.getItem("dailyChallenge"));
+                if (challenge.action === "blog") localStorage.setItem("challengeCompleted", "true");
+                updateDailyChallenge();
+                showPage('blog');
             }
         }
 
@@ -791,7 +915,7 @@
                 saveUserData();
                 alert(`Now following ${targetUser}!`);
                 updateProfile(currentUser);
-                addNotification(`You followed ${targetUser}!`); // Feature 1
+                addNotification(`You followed ${targetUser}!`);
             }
         }
         function showFollowers() {
@@ -811,7 +935,7 @@
                 alert(`${username} has been banned!`);
                 document.getElementById("ban-username").value = "";
                 updateUserManagement();
-                addNotification(`You banned ${username}!`); // Feature 1
+                addNotification(`You banned ${username}!`);
             }
         }
         function unbanUser() {
@@ -827,7 +951,7 @@
                 alert(`${username} has been unbanned!`);
                 document.getElementById("unban-username").value = "";
                 updateUserManagement();
-                addNotification(`You unbanned ${username}!`); // Feature 1
+                addNotification(`You unbanned ${username}!`);
             }
         }
         function updateUserManagement() {
@@ -844,7 +968,7 @@
             saveUserData();
             updateUserManagement();
             playSound('fanfare');
-            addNotification(`${user} was ${userData[user].isBanned ? 'banned' : 'unbanned'}!`); // Feature 1
+            addNotification(`${user} was ${userData[user].isBanned ? 'banned' : 'unbanned'}!`);
         }
 
         const music = document.getElementById('background-music');
@@ -876,7 +1000,6 @@
         music.addEventListener('pause', updateMusicButton);
         music.addEventListener('play', updateMusicButton);
 
-        // Feature 1: Notifications System
         function addNotification(message) {
             userData[currentUser].notifications = userData[currentUser].notifications || [];
             userData[currentUser].notifications.unshift(`${new Date().toLocaleString()}: ${message}`);
@@ -897,10 +1020,65 @@
             document.getElementById("notifications").classList.toggle("hidden");
         }
 
-        // Feature 2: Live Visitor Counter
         function updateVisitorCount() {
             const count = Math.floor(Math.random() * 20) + 1;
             document.getElementById("visitor-count").innerText = count;
+        }
+
+        function setProfileTheme() {
+            const color = document.getElementById("profile-color").value;
+            document.getElementById("profile").style.background = `linear-gradient(45deg, #121212, ${color}, #ff9900)`;
+            userData[currentUser].profileTheme = color;
+            saveUserData();
+            playSound('click');
+            addNotification("You updated your profile theme!");
+        }
+
+        function updateDailyChallenge() {
+            const today = new Date().toDateString();
+            if (localStorage.getItem("lastChallengeDate") !== today) {
+                const challenge = challenges[Math.floor(Math.random() * challenges.length)];
+                localStorage.setItem("dailyChallenge", JSON.stringify(challenge));
+                localStorage.setItem("lastChallengeDate", today);
+                localStorage.setItem("challengeCompleted", "false");
+            }
+            const currentChallenge = JSON.parse(localStorage.getItem("dailyChallenge"));
+            document.getElementById("challenge-text").innerText = `${currentChallenge.text} (+${currentChallenge.xp} XP)`;
+            document.getElementById("daily-challenge").querySelector("button").disabled = localStorage.getItem("challengeCompleted") === "true";
+        }
+
+        function completeChallenge() {
+            const currentChallenge = JSON.parse(localStorage.getItem("dailyChallenge"));
+            if (localStorage.getItem("challengeCompleted") === "false") {
+                alert("Complete the action first!");
+                return;
+            }
+            addXP(currentChallenge.xp);
+            localStorage.setItem("challengeCompleted", "true");
+            updateDailyChallenge();
+            addNotification(`You completed the daily challenge: ${currentChallenge.text}`);
+        }
+
+        function addReaction(button, emoji) {
+            const counter = button.querySelector("span");
+            counter.innerText = parseInt(counter.innerText) + 1;
+            playSound('click');
+            addNotification(`You reacted with ${emoji}!`);
+        }
+
+        function logProfileVisitor() {
+            if (!isLoggedIn || !currentUser) return;
+            const visitor = fakeUsers[Math.floor(Math.random() * fakeUsers.length)];
+            userData[currentUser].visitors = userData[currentUser].visitors || [];
+            userData[currentUser].visitors.unshift(`${visitor} visited at ${new Date().toLocaleString()}`);
+            if (userData[currentUser].visitors.length > 5) userData[currentUser].visitors.pop();
+            saveUserData();
+            updateVisitorLog();
+        }
+
+        function updateVisitorLog() {
+            const list = document.getElementById("visitor-list");
+            list.innerHTML = userData[currentUser].visitors.map(v => `<li>${v}</li>`).join('');
         }
 
         function ensureUserData(username) {
@@ -910,7 +1088,10 @@
                 bio: userData[username].bio || '',
                 xp: userData[username].xp || 0,
                 followers: userData[username].followers || [],
-                notifications: userData[username].notifications || []
+                notifications: userData[username].notifications || [],
+                profileTheme: userData[username].profileTheme || '#ff4040',
+                status: userData[username].status || '',
+                visitors: userData[username].visitors || []
             };
             saveUserData();
         }
