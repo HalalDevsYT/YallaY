@@ -284,14 +284,14 @@
             100% { opacity: 0; transform: translate(-50%, -40%); display: none; }
         }
         main {
-            padding-top: 150px; /* Fixed header space */
-            min-height: calc(100vh - 150px); /* Ensure content fills viewport */
+            padding-top: 120px; /* Adjusted for header */
+            min-height: calc(100vh - 120px); /* Ensure content fills viewport */
         }
         @media (max-width: 600px) {
             header { flex-wrap: wrap; padding: 10px; }
             header img { height: 60px; }
             .search-bar { width: 100%; margin-top: 10px; }
-            main { padding-top: 120px; min-height: calc(100vh - 120px); }
+            main { padding-top: 100px; min-height: calc(100vh - 100px); }
         }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
@@ -593,53 +593,72 @@
             if (localStorage.getItem('rememberedUsername')) {
                 document.getElementById("auth-username").value = localStorage.getItem('rememberedUsername');
             }
-            showPage('home'); // Ensure home loads by default
+            showPage('home'); // Start on home page
         };
 
         function showPage(pageId) {
-            // Select all sections and containers within main
-            const sections = document.querySelectorAll('#content > *');
-            sections.forEach(section => {
-                section.classList.add('hidden');
+            console.log(`Attempting to show page: ${pageId}`);
+
+            // Get all top-level elements in main
+            const pages = document.querySelectorAll('#content > *');
+            console.log(`Found ${pages.length} pages:`, Array.from(pages).map(p => p.id));
+
+            // Hide all pages
+            pages.forEach(page => {
+                page.classList.add('hidden');
+                console.log(`Hid page: ${page.id}`);
             });
 
-            // Show the requested page
+            // Show the target page
             const targetPage = document.getElementById(pageId);
             if (targetPage) {
                 targetPage.classList.remove('hidden');
+                console.log(`Showed page: ${pageId}`);
             } else {
-                console.error(`Page with ID "${pageId}" not found!`);
-                showPage('home'); // Fallback to home if page not found
+                console.error(`Page "${pageId}" not found, reverting to home`);
+                document.getElementById('home').classList.remove('hidden');
                 return;
             }
 
-            // Additional visibility logic
+            // Additional visibility for home-specific sections
             if (isLoggedIn && pageId === 'home') {
-                document.getElementById('leaderboard').classList.remove('hidden');
-                document.getElementById('chat').classList.remove('hidden');
-                document.getElementById('updates').classList.remove('hidden');
+                ['leaderboard', 'chat', 'updates'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.classList.remove('hidden');
+                        console.log(`Showed additional section: ${id}`);
+                    }
+                });
             } else {
-                document.getElementById('leaderboard').classList.add('hidden');
-                document.getElementById('chat').classList.add('hidden');
-                document.getElementById('updates').classList.add('hidden');
+                ['leaderboard', 'chat', 'updates'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.classList.add('hidden');
+                        console.log(`Hid additional section: ${id}`);
+                    }
+                });
             }
 
-            // Remove welcome message if present
+            // Clean up welcome message
             const welcomeMessage = document.getElementById("welcome-message");
-            if (welcomeMessage) welcomeMessage.remove();
+            if (welcomeMessage) {
+                welcomeMessage.remove();
+                console.log("Removed welcome message");
+            }
 
-            // Update UI elements
+            // Update UI
             updateMusicButton();
-            document.body.appendChild(cursor); // Ensure cursor stays in DOM
-            
-            // Load content for specific pages
+            console.log("Updated music button");
+
+            // Load page-specific content
             if (pageId === 'profile') logProfileVisitor();
             if (pageId === 'projects') loadProjects();
             if (pageId === 'blog') loadBlogPosts();
             if (pageId === 'chat') loadChatMessages();
 
-            // Reset scroll position
+            // Reset scroll
             window.scrollTo(0, 0);
+            console.log("Scroll reset to top");
         }
 
         let isLoginMode = true;
