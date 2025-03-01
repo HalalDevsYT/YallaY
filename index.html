@@ -41,7 +41,7 @@
             align-items: center;
             justify-content: space-between;
             box-shadow: 0 0 20px #ff4040;
-            position: fixed; /* Fixed on mobile */
+            position: fixed;
             top: 0;
             width: 100%;
             z-index: 1000;
@@ -57,13 +57,7 @@
         
         header img:hover { transform: scale(1.1); box-shadow: 0 0 15px #ff4040; }
         
-        header h1 { 
-            margin: 0; 
-            flex-grow: 1; 
-            text-align: left; 
-            padding-left: 20px; 
-            font-size: 1.5em; 
-        }
+        header h1 { margin: 0; flex-grow: 1; text-align: left; padding-left: 20px; }
         
         .search-bar {
             padding: 10px;
@@ -224,11 +218,80 @@
         .reactions { margin-left: 10px; }
         .reactions button { padding: 5px; font-size: 12px; background: none; border: none; cursor: pointer; }
         #achievements-wall { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+        
+        /* Enhanced Login/Register Styles */
+        #auth-container {
+            position: relative;
+            overflow: hidden;
+        }
+        #auth-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(255, 64, 64, 0.2), rgba(255, 153, 0, 0.2));
+            animation: formBG 10s ease infinite;
+            z-index: -1;
+        }
+        @keyframes formBG {
+            0% { transform: translateX(-50%) translateY(-50%) rotate(0deg); }
+            50% { transform: translateX(50%) translateY(50%) rotate(180deg); }
+            100% { transform: translateX(-50%) translateY(-50%) rotate(360deg); }
+        }
+        #password-strength {
+            height: 5px;
+            background: #444;
+            margin: 5px 0;
+        }
+        #strength-bar {
+            height: 100%;
+            width: 0%;
+            background: #ff4040;
+            transition: width 0.3s;
+        }
+        #loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #ff9900;
+            border-top: 3px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        #welcome-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px #ff4040;
+            z-index: 2000;
+            animation: fadeInOut 2s ease forwards;
+        }
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translate(-50%, -60%); }
+            20% { opacity: 1; transform: translate(-50%, -50%); }
+            80% { opacity: 1; transform: translate(-50%, -50%); }
+            100% { opacity: 0; transform: translate(-50%, -40%); display: none; }
+        }
+        main {
+            padding-top: 150px; /* Fixed header space */
+            min-height: calc(100vh - 150px); /* Prevent collapse */
+        }
         @media (max-width: 600px) {
             header { flex-wrap: wrap; padding: 10px; }
             header img { height: 60px; }
             .search-bar { width: 100%; margin-top: 10px; }
-            main { margin-top: 120px; } /* Space for fixed header */
+            main { padding-top: 120px; min-height: calc(100vh - 120px); }
         }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
@@ -260,8 +323,12 @@
                 <p id="challenge-text">Loading...</p>
                 <button class="button" onclick="completeChallenge()">Complete</button>
             </div>
-            <button class="button" id="login-btn" title="Click to log in" onclick="playSound('click'); showPage('login-form')">Login</button>
-            <button class="button" id="register-btn" title="Click to register" onclick="playSound('click'); showPage('register-form')">Register</button>
+            <div id="activity-feed" class="container">
+                <h3>Activity Feed</h3>
+                <ul id="activity-list"></ul>
+            </div>
+            <button class="button" id="login-btn" title="Click to log in" onclick="playSound('click'); isLoginMode = true; document.getElementById('auth-title').innerText = 'Login'; document.getElementById('auth-submit').innerText = 'Login'; document.getElementById('auth-toggle').innerText = 'Register instead'; document.getElementById('auth-avatar-preview').style.display = 'none'; showPage('auth-container')">Login</button>
+            <button class="button" id="register-btn" title="Click to register" onclick="playSound('click'); isLoginMode = false; document.getElementById('auth-title').innerText = 'Register'; document.getElementById('auth-submit').innerText = 'Register'; document.getElementById('auth-toggle').innerText = 'Login instead'; document.getElementById('auth-avatar-preview').style.display = 'block'; showPage('auth-container')">Register</button>
             <button class="button hidden" id="profile-btn" onclick="playSound('click'); showPage('profile')">Profile</button>
             <button class="button" id="projects-btn" onclick="playSound('click'); showPage('projects')">Projects</button>
             <button class="button" id="blog-btn" onclick="playSound('click'); showPage('blog')">Blog</button>
@@ -271,19 +338,27 @@
             <button class="button hidden" id="logout-btn" onclick="logout()">Logout</button>
         </section>
         
-        <div id="login-form" class="container hidden">
-            <h2>Login</h2>
-            <input type="text" id="login-username" class="input-field" placeholder="Username">
-            <input type="password" id="login-password" class="input-field" placeholder="Password">
-            <button class="button" onclick="login()">Login</button>
-            <button class="button" onclick="showPage('home')">Back</button>
-        </div>
-
-        <div id="register-form" class="container hidden">
-            <h2>Register</h2>
-            <input type="text" id="reg-username" class="input-field" placeholder="Username">
-            <input type="password" id="reg-password" class="input-field" placeholder="Password">
-            <button class="button" onclick="register()">Register</button>
+        <div id="auth-container" class="container hidden">
+            <h2 id="auth-title">Login</h2>
+            <input type="text" id="auth-username" class="input-field" placeholder="Username">
+            <input type="password" id="auth-password" class="input-field" placeholder="Password">
+            <div id="password-strength">
+                <div id="strength-bar"></div>
+            </div>
+            <img id="auth-avatar-preview" src="default-avatar.png" alt="Avatar Preview" style="width: 50px; border-radius: 50%; margin: 10px auto; display: none;">
+            <input type="checkbox" id="remember-me" style="margin-right: 5px;"><label for="remember-me" style="font-size: 12px;">Remember Me</label>
+            <div id="loading-spinner"></div>
+            <button class="button" id="auth-submit" onclick="authSubmit()">Login</button>
+            <p style="font-size: 12px; margin: 5px 0;">
+                <a href="#" onclick="alert('Hint: Owner password is HOOKfor9! For others, tough luck!'); return false;" style="color: #ff9900;">Forgot Password?</a>
+            </p>
+            <div style="margin: 10px 0;">
+                <button class="button" style="background: #1da1f2;" onclick="alert('Simulated Twitter login! Use manual login for now.');">Login with Twitter</button>
+                <button class="button" style="background: #7289da;" onclick="alert('Simulated Discord login! Use manual login for now.');">Login with Discord</button>
+            </div>
+            <p style="font-size: 12px; margin: 5px 0;">
+                <a href="#" id="auth-toggle" onclick="toggleAuthMode(); return false;" style="color: #ff9900;">Register instead</a>
+            </p>
             <button class="button" onclick="showPage('home')">Back</button>
         </div>
 
@@ -297,6 +372,13 @@
             <button class="button" onclick="updateBio()">Save Bio</button>
             <input type="text" id="user-status" class="input-field" placeholder="Set your status (max 20 chars)" maxlength="20">
             <button class="button" onclick="updateStatus()">Update Status</button>
+            <select id="badge-picker" class="input-field">
+                <option value="">No Badge</option>
+                <option value="⭐">Star</option>
+                <option value="⚡">Lightning</option>
+                <option value="🔥">Fire</option>
+            </select>
+            <button class="button" onclick="setBadge()">Set Badge</button>
             <p>Level: <span id="user-level">1</span> (XP: <span id="user-xp">0</span>)</p>
             <p>Projects Created: <span id="projects-created">0</span></p>
             <p>Blog Posts Written: <span id="blog-posts">0</span></p>
@@ -320,10 +402,20 @@
             <button class="button" onclick="setProfileTheme()">Set Profile Theme</button>
             <input type="checkbox" id="sound-toggle" checked>
             <label for="sound-toggle">Enable Sound Effects</label>
+            <h4>Custom Sounds</h4>
+            <select id="fanfare-sound" class="input-field">
+                <option value="fanfare.mp3">Default Fanfare</option>
+                <option value="custom">Custom</option>
+            </select>
+            <input type="text" id="custom-sound-url" class="input-field" placeholder="Custom Sound URL">
+            <button class="button" onclick="setCustomSound()">Set Sound</button>
             <h4>Site Themes</h4>
-            <button class="button" onclick="setSiteTheme('fire')">Fire</button>
-            <button class="button" onclick="setSiteTheme('ice')">Ice</button>
-            <button class="button" onclick="setSiteTheme('neon')">Neon</button>
+            <button class="button" onclick="previewSiteTheme('fire')" onmouseout="resetSiteTheme()">Preview Fire</button>
+            <button class="button" onclick="previewSiteTheme('ice')" onmouseout="resetSiteTheme()">Preview Ice</button>
+            <button class="button" onclick="previewSiteTheme('neon')" onmouseout="resetSiteTheme()">Preview Neon</button>
+            <button class="button" onclick="setSiteTheme('fire')">Set Fire</button>
+            <button class="button" onclick="setSiteTheme('ice')">Set Ice</button>
+            <button class="button" onclick="setSiteTheme('neon')">Set Neon</button>
             <button class="button" onclick="showPage('home')">Back</button>
         </div>
 
@@ -381,7 +473,7 @@
             <h3>YallaY Chat</h3>
             <div id="chat-box"></div>
             <div id="typing-indicator" class="hidden">Someone is typing...</div>
-            <input type="text" id="chat-input" class="input-field" placeholder="Type a message... (:smile: for 😊)">
+            <input type="text" id="chat-input" class="input-field" placeholder="Type a message... (:smile: for 😊, @username to mention)">
             <button class="button" onclick="toggleEmotePicker()" style="padding: 10px;">😊</button>
             <button class="button" onclick="sendChat()">Send</button>
             <div id="emote-picker" class="container hidden" style="position: absolute; bottom: 80px; right: 20px; width: 200px;">
@@ -447,7 +539,9 @@
             blogPosts: [
                 { title: "My Journey as YallaY", content: "Started creating amazing projects—stay tuned for more updates!", creator: "Halaldeveloper", comments: [], reactions: { '👍': 0, '🔥': 0 } },
                 { title: "Future Ideas", content: "Thinking about a new game or app—let me know what you think!", creator: "Halaldeveloper", comments: [], reactions: { '👍': 0, '🔥': 0 } }
-            ]
+            ],
+            activeUsers: 0,
+            activity: []
         };
         const ownerUsername = "Halaldeveloper";
         const fakeUsers = ["SparkAt", "LaserLad", "CodeMaster", "YallaFan"];
@@ -484,6 +578,8 @@
                 updateUI();
                 updateProfile(currentUser);
                 updateNotifications();
+                siteData.activeUsers++;
+                saveSiteData();
             }
             loadSiteData();
             particlesJS("particles-js", {
@@ -493,6 +589,10 @@
             updateVisitorCount();
             setInterval(updateVisitorCount, 5000);
             updateDailyChallenge();
+            updateActivityFeed();
+            if (localStorage.getItem('rememberedUsername')) {
+                document.getElementById("auth-username").value = localStorage.getItem('rememberedUsername');
+            }
         };
 
         function showPage(page) {
@@ -508,6 +608,7 @@
                 document.getElementById('chat').classList.add('hidden');
                 document.getElementById('updates').classList.add('hidden');
             }
+            document.getElementById("welcome-message")?.remove();
             updateMusicButton();
             document.body.appendChild(cursor);
             document.addEventListener('mousemove', updateCursor);
@@ -515,91 +616,112 @@
             if (page === 'projects') loadProjects();
             if (page === 'blog') loadBlogPosts();
             if (page === 'chat') loadChatMessages();
+            window.scrollTo(0, 0); // Reset scroll to fix shift
         }
 
-        function login() {
-            const username = document.getElementById("login-username").value;
-            const password = document.getElementById("login-password").value;
-            if (username === ownerUsername && password === "HOOKfor9") {
-                ensureUserData(username);
-                playSound('fanfare');
-                alert("Login successful as owner!");
-                document.getElementById("user-name").innerText = username;
-                isLoggedIn = true;
-                currentUser = username;
-                saveLoginState();
-                updateUI();
-                updateProfile(username);
-                updateNotifications();
-                addNotification("You logged in as owner!");
-                showPage('home');
-                return;
-            }
-            if (userData[username] && userData[username].password === password) {
-                if (userData[username].isBanned) {
-                    alert("You are banned and cannot log in.");
-                    return;
-                }
-                ensureUserData(username);
-                playSound('fanfare');
-                alert("Login successful!");
-                document.getElementById("user-name").innerText = username;
-                isLoggedIn = true;
-                currentUser = username;
-                saveLoginState();
-                updateUI();
-                updateProfile(username);
-                updateNotifications();
-                addNotification("You logged in!");
-                showPage('home');
-            } else {
-                alert("Invalid username or password.");
-            }
+        let isLoginMode = true;
+
+        function toggleAuthMode() {
+            isLoginMode = !isLoginMode;
+            document.getElementById("auth-title").innerText = isLoginMode ? "Login" : "Register";
+            document.getElementById("auth-submit").innerText = isLoginMode ? "Login" : "Register";
+            document.getElementById("auth-toggle").innerText = isLoginMode ? "Register instead" : "Login instead";
+            document.getElementById("auth-avatar-preview").style.display = isLoginMode ? "none" : "block";
+            document.getElementById("strength-bar").style.width = "0%";
+            document.getElementById("auth-username").value = localStorage.getItem('rememberedUsername') || '';
+            document.getElementById("auth-password").value = '';
         }
 
-        function register() {
-            const username = document.getElementById("reg-username").value;
-            const password = document.getElementById("reg-password").value;
-            if (username && password) {
-                if (userData[username] || username === ownerUsername) {
-                    alert("Username already taken or reserved!");
+        function authSubmit() {
+            const username = document.getElementById("auth-username").value.trim();
+            const password = document.getElementById("auth-password").value;
+            const rememberMe = document.getElementById("remember-me").checked;
+            const spinner = document.getElementById("loading-spinner");
+            spinner.style.display = "block";
+            document.getElementById("auth-submit").disabled = true;
+
+            setTimeout(() => {
+                spinner.style.display = "none";
+                document.getElementById("auth-submit").disabled = false;
+                if (isLoginMode) {
+                    if (username === ownerUsername && password === "HOOKfor9") {
+                        handleLogin(username);
+                    } else if (userData[username] && userData[username].password === password) {
+                        if (userData[username].isBanned) {
+                            alert("You are banned and cannot log in.");
+                            return;
+                        }
+                        handleLogin(username);
+                    } else {
+                        alert("Invalid username or password.");
+                    }
                 } else {
-                    userData[username] = {
-                        password,
-                        projectsCreated: 0,
-                        blogPosts: 0,
-                        history: [],
-                        isBanned: false,
-                        avatar: 'default-avatar.png',
-                        bio: '',
-                        xp: 0,
-                        followers: [],
-                        notifications: [],
-                        profileTheme: '#ff4040',
-                        status: '',
-                        visitors: [],
-                        achieved: {},
-                        collabRequests: [],
-                        cursorColor: '#ff4040'
-                    };
-                    localStorage.setItem('userData', JSON.stringify(userData));
-                    playSound('fanfare');
-                    alert("Registration successful! Please login.");
-                    showPage('login-form');
+                    if (username && password) {
+                        if (userData[username] || username === ownerUsername) {
+                            alert("Username already taken or reserved!");
+                        } else {
+                            userData[username] = {
+                                password,
+                                projectsCreated: 0,
+                                blogPosts: 0,
+                                history: [],
+                                isBanned: false,
+                                avatar: 'default-avatar.png',
+                                bio: '',
+                                xp: 0,
+                                followers: [],
+                                notifications: [],
+                                profileTheme: '#ff4040',
+                                status: '',
+                                visitors: [],
+                                achieved: {},
+                                collabRequests: [],
+                                cursorColor: '#ff4040',
+                                customFanfare: 'https://www.myinstants.com/media/sounds/fanfare.mp3',
+                                badge: ''
+                            };
+                            localStorage.setItem('userData', JSON.stringify(userData));
+                            playSound('fanfare');
+                            alert("Registration successful! Please login.");
+                            toggleAuthMode();
+                        }
+                    } else {
+                        alert("Please enter a username and password.");
+                    }
                 }
-            } else {
-                alert("Please enter a username and password.");
-            }
+                if (rememberMe) {
+                    localStorage.setItem('rememberedUsername', username);
+                } else {
+                    localStorage.removeItem('rememberedUsername');
+                }
+            }, 1000);
         }
 
-        function logout() {
-            isLoggedIn = false;
-            currentUser = null;
-            playSound('click');
-            alert("You have been logged out.");
+        function handleLogin(username) {
+            ensureUserData(username);
+            playSound('fanfare');
+            alert(`Login successful${username === ownerUsername ? ' as owner' : ''}!`);
+            document.getElementById("user-name").innerText = username;
+            isLoggedIn = true;
+            currentUser = username;
             saveLoginState();
             updateUI();
+            updateProfile(username);
+            updateNotifications();
+            addActivity(`${username} logged in`);
+            addNotification(`You logged in${username === ownerUsername ? ' as owner' : ''}!`);
+            siteData.activeUsers++;
+            saveSiteData();
+            showWelcomeMessage(username);
             showPage('home');
+        }
+
+        function showWelcomeMessage(username) {
+            const welcomeDiv = document.createElement("div");
+            welcomeDiv.id = "welcome-message";
+            welcomeDiv.innerHTML = `<h2>Welcome, ${username}!</h2>`;
+            document.body.appendChild(welcomeDiv);
+            setTimeout(() => welcomeDiv.remove(), 2000);
         }
 
         function updateUI() {
@@ -614,12 +736,26 @@
             document.getElementById("owner-tools-btn").classList.toggle("hidden", !(isLoggedIn && currentUser === ownerUsername));
         }
 
+        function logout() {
+            isLoggedIn = false;
+            currentUser = null;
+            playSound('click');
+            alert("You have been logged out.");
+            siteData.activeUsers = Math.max(0, siteData.activeUsers - 1);
+            addActivity(`${document.getElementById("user-name").innerText} logged out`);
+            saveSiteData();
+            saveLoginState();
+            updateUI();
+            showPage('home');
+        }
+
         function updateProfile(username) {
             document.getElementById("projects-created").innerText = userData[username].projectsCreated || 0;
             document.getElementById("blog-posts").innerText = userData[username].blogPosts || 0;
             document.getElementById("avatar-display").src = userData[username].avatar;
             document.getElementById("bio").value = userData[username].bio;
             document.getElementById("user-status").value = userData[username].status || '';
+            document.getElementById("badge-picker").value = userData[username].badge || '';
             document.getElementById("follower-count").innerText = userData[username].followers.length;
             updateLeaderboard();
             updateAchievements(username);
@@ -669,6 +805,16 @@
             if (Object.keys(userData[username].achieved).length > 0) playSound('fanfare');
         }
 
+        function setBadge() {
+            const badge = document.getElementById("badge-picker").value;
+            userData[currentUser].badge = badge;
+            saveUserData();
+            playSound('click');
+            addActivity("updated their badge");
+            addNotification(`You set your badge to ${badge || 'None'}!`);
+            updateProfile(currentUser);
+        }
+
         function setTheme(theme) {
             document.body.className = '';
             if (theme !== 'dark') document.body.classList.add(theme);
@@ -689,9 +835,24 @@
             } else {
                 clickSound.pause();
                 clickSound.currentTime = 0;
+                fanfareSound.src = userData[currentUser]?.customFanfare || "https://www.myinstants.com/media/sounds/fanfare.mp3";
                 fanfareSound.currentTime = 0;
                 fanfareSound.play();
             }
+        }
+
+        function setCustomSound() {
+            const soundType = document.getElementById("fanfare-sound").value;
+            const url = document.getElementById("custom-sound-url").value.trim();
+            if (soundType === "custom" && url) {
+                userData[currentUser].customFanfare = url;
+            } else {
+                userData[currentUser].customFanfare = "https://www.myinstants.com/media/sounds/fanfare.mp3";
+            }
+            saveUserData();
+            playSound('fanfare');
+            addActivity("updated their fanfare sound");
+            addNotification("You updated your fanfare sound!");
         }
 
         function updateLeaderboard() {
@@ -699,7 +860,7 @@
                 .sort((a, b) => b[1].projectsCreated - a[1].projectsCreated)
                 .slice(0, 5);
             document.getElementById("top-creators-list").innerHTML = topCreators.map(([user, data]) => 
-                `<li>${user} - Projects: ${data.projectsCreated} - XP: ${data.xp || 0} - Followers: ${data.followers.length}</li>`
+                `<li>${data.badge || ''}${user} - Projects: ${data.projectsCreated} - XP: ${data.xp || 0} - Followers: ${data.followers.length}</li>`
             ).join('');
         }
 
@@ -721,7 +882,7 @@
                 const resultsDiv = document.createElement("div");
                 resultsDiv.id = "player-search-results";
                 resultsDiv.innerHTML = "<h3>Players Found</h3>" + playerResults.map(user => 
-                    `<div class="project-card"><h3>${user}${userData[user].status ? ` (${userData[user].status})` : ''}</h3><p>Projects: ${userData[user].projectsCreated}</p><button class="button" onclick="followUser('${user}')">Follow</button></div>`
+                    `<div class="project-card"><h3>${userData[user].badge || ''}${user}</h3><p>Projects: ${userData[user].projectsCreated}</p><button class="button" onclick="followUser('${user}')">Follow</button></div>`
                 ).join('');
                 projectList.appendChild(resultsDiv);
             }
@@ -730,7 +891,7 @@
         function loadChatMessages() {
             const chatBox = document.getElementById("chat-box");
             chatBox.innerHTML = siteData.chatMessages.map(msg => 
-                `<p><b>${msg.user}</b>${userData[msg.user]?.status ? ` (${userData[msg.user].status})` : ''} [${msg.timestamp}]: ${msg.text} <span class="reactions"><button onclick="addReaction(this, '👍')">👍 <span>${msg.reactions['👍'] || 0}</span></button><button onclick="addReaction(this, '🔥')">🔥 <span>${msg.reactions['🔥'] || 0}</span></button></span></p>`
+                `<p><b>${userData[msg.user]?.badge || ''}${msg.user}</b>${userData[msg.user]?.status ? ` (${userData[msg.user].status})` : ''} [${msg.timestamp}]: ${msg.text} <span class="reactions"><button onclick="addReaction(this, '👍')">👍 <span>${msg.reactions['👍'] || 0}</span></button><button onclick="addReaction(this, '🔥')">🔥 <span>${msg.reactions['🔥'] || 0}</span></button></span></p>`
             ).join('');
             chatBox.scrollTop = chatBox.scrollHeight;
         }
@@ -750,10 +911,22 @@
                     document.getElementById("chat-input").value = "";
                     addXP(5);
                     playSound('click');
+                    addActivity("sent a chat message");
                     addNotification("You sent a chat message!");
                     const challenge = JSON.parse(localStorage.getItem("dailyChallenge"));
                     if (challenge?.action === "chat") localStorage.setItem("challengeCompleted", "true");
                     updateDailyChallenge();
+                    // Handle mentions
+                    const mentions = formattedMessage.match(/@(\w+)/g);
+                    if (mentions) {
+                        mentions.forEach(mention => {
+                            const mentionedUser = mention.slice(1);
+                            if (userData[mentionedUser]) {
+                                userData[mentionedUser].notifications.unshift(`${timestamp}: ${currentUser} mentioned you in chat!`);
+                                saveUserData();
+                            }
+                        });
+                    }
                 }, 1000);
             }
         }
@@ -779,7 +952,7 @@
                     <div class="comments">
                         <input type="text" class="input-field comment-input" placeholder="Add a comment...">
                         <button class="button" onclick="addComment(this, '${post.title}')">Comment</button>
-                        <div class="comment-list">${post.comments.map(c => `<p><b>${c.user}</b>: ${c.text}</p>`).join('')}</div>
+                        <div class="comment-list">${post.comments.map(c => `<p><b>${userData[c.user]?.badge || ''}${c.user}</b>: ${c.text}</p>`).join('')}</div>
                     </div>
                     <span class="reactions"><button onclick="addReaction(this, '👍')">👍 <span>${post.reactions['👍'] || 0}</span></button><button onclick="addReaction(this, '🔥')">🔥 <span>${post.reactions['🔥'] || 0}</span></button></span>
                 </div>`).join('');
@@ -800,6 +973,7 @@
             localStorage.setItem('userData', JSON.stringify(userData));
             updateProfile(username);
             playSound('fanfare');
+            addActivity("refreshed their stats");
             addNotification("You refreshed your stats!");
             alert("Stats refreshed! (Simulated)");
         }
@@ -827,6 +1001,7 @@
                 playSound('fanfare');
                 alert("Message sent to YallaY! (Simulated)");
                 document.getElementById("contact-message").value = "";
+                addActivity("sent a contact message");
                 addNotification("You sent a contact message!");
             } else if (!isLoggedIn) {
                 alert("Please log in to send a message.");
@@ -839,6 +1014,7 @@
             document.getElementById("avatar-display").src = userData[currentUser].avatar;
             saveUserData();
             playSound('click');
+            addActivity("updated their avatar");
             addNotification("You updated your avatar!");
         }
 
@@ -846,6 +1022,7 @@
             userData[currentUser].bio = document.getElementById("bio").value;
             saveUserData();
             playSound('click');
+            addActivity("updated their bio");
             addNotification("You updated your bio!");
         }
 
@@ -867,6 +1044,7 @@
             userData[currentUser].status = status;
             saveUserData();
             playSound('click');
+            addActivity("updated their status");
             addNotification(`You updated your status to: ${status}`);
         }
 
@@ -908,6 +1086,7 @@
                 };
                 siteData.projects.push(project);
                 saveSiteData();
+                addActivity("created a new project");
                 addNotification(`You created a new project: ${title}`);
                 playSound('fanfare');
                 const challenge = JSON.parse(localStorage.getItem("dailyChallenge"));
@@ -921,6 +1100,7 @@
             const message = prompt(`Send a message to ${username}:`);
             if (message) {
                 alert(`Message sent to ${username}: "${message}" (Simulated)`);
+                addActivity(`messaged ${username}`);
                 addNotification(`You messaged ${username}!`);
             }
         }
@@ -944,6 +1124,7 @@
                     loadBlogPosts();
                     addXP(10);
                     playSound('click');
+                    addActivity("added a comment");
                     addNotification("You added a comment!");
                 }
             }
@@ -964,6 +1145,7 @@
                 };
                 siteData.blogPosts.push(blogPost);
                 saveSiteData();
+                addActivity("posted a new blog");
                 addNotification(`You posted a new blog: ${title}`);
                 playSound('fanfare');
                 const challenge = JSON.parse(localStorage.getItem("dailyChallenge"));
@@ -978,13 +1160,14 @@
                 userData[targetUser].followers.push(currentUser);
                 saveUserData();
                 alert(`Now following ${targetUser}!`);
+                addActivity(`followed ${targetUser}`);
                 updateProfile(currentUser);
                 addNotification(`You followed ${targetUser}!`);
             }
         }
 
         function showFollowers() {
-            alert(`Followers: ${userData[currentUser].followers.join(", ") || "None"}`);
+            alert(`Followers: ${userData[currentUser].followers.map(u => `${userData[u].badge || ''}${u}`).join(", ") || "None"}`);
         }
 
         function banUser() {
@@ -999,6 +1182,7 @@
                 playSound('fanfare');
                 alert(`${username} has been banned!`);
                 document.getElementById("ban-username").value = "";
+                addActivity(`banned ${username}`);
                 updateUserManagement();
                 addNotification(`You banned ${username}!`);
             }
@@ -1016,6 +1200,7 @@
                 playSound('fanfare');
                 alert(`${username} has been unbanned!`);
                 document.getElementById("unban-username").value = "";
+                addActivity(`unbanned ${username}`);
                 updateUserManagement();
                 addNotification(`You unbanned ${username}!`);
             }
@@ -1025,7 +1210,7 @@
             const userList = document.getElementById("user-list");
             userList.innerHTML = Object.keys(userData).map(user => `
                 <div>
-                    <p>${user} - Projects: ${userData[user].projectsCreated} - ${userData[user].isBanned ? 'Banned' : 'Active'}</p>
+                    <p>${userData[user].badge || ''}${user} - Projects: ${userData[user].projectsCreated} - ${userData[user].isBanned ? 'Banned' : 'Active'}</p>
                     <button class="button" onclick="toggleBan('${user}')">${userData[user].isBanned ? 'Unban' : 'Ban'}</button>
                 </div>
             `).join('');
@@ -1036,6 +1221,7 @@
             saveUserData();
             updateUserManagement();
             playSound('fanfare');
+            addActivity(`${user} was ${userData[user].isBanned ? 'banned' : 'unbanned'}`);
             addNotification(`${user} was ${userData[user].isBanned ? 'banned' : 'unbanned'}!`);
         }
 
@@ -1089,8 +1275,10 @@
         }
 
         function updateVisitorCount() {
-            const count = Math.floor(Math.random() * 20) + 1;
-            document.getElementById("visitor-count").innerText = count;
+            const baseCount = siteData.activeUsers;
+            const randomFlux = Math.floor(Math.random() * 5) - 2;
+            const liveCount = Math.max(0, baseCount + randomFlux);
+            document.getElementById("visitor-count").innerText = liveCount;
         }
 
         function setProfileTheme() {
@@ -1099,7 +1287,45 @@
             userData[currentUser].profileTheme = color;
             saveUserData();
             playSound('click');
+            addActivity("updated their profile theme");
             addNotification("You updated your profile theme!");
+        }
+
+        function previewSiteTheme(theme) {
+            let colors;
+            switch (theme) {
+                case 'fire': colors = { primary: '#ff4040', secondary: '#ff9900', bg: '#121212' }; break;
+                case 'ice': colors = { primary: '#40c4ff', secondary: '#b3e5fc', bg: '#e0f7fa' }; break;
+                case 'neon': colors = { primary: '#00e676', secondary: '#ffea00', bg: '#0d1b2a' }; break;
+            }
+            document.body.style.background = `linear-gradient(45deg, ${colors.bg}, ${colors.primary}, ${colors.secondary})`;
+            document.querySelectorAll('.button').forEach(btn => {
+                btn.style.background = colors.primary;
+                btn.style.boxShadow = `0 0 10px ${colors.primary}`;
+            });
+        }
+
+        function resetSiteTheme() {
+            applySavedSettings();
+        }
+
+        function setSiteTheme(theme) {
+            let colors;
+            switch (theme) {
+                case 'fire': colors = { primary: '#ff4040', secondary: '#ff9900', bg: '#121212' }; break;
+                case 'ice': colors = { primary: '#40c4ff', secondary: '#b3e5fc', bg: '#e0f7fa' }; break;
+                case 'neon': colors = { primary: '#00e676', secondary: '#ffea00', bg: '#0d1b2a' }; break;
+            }
+            document.body.style.background = `linear-gradient(45deg, ${colors.bg}, ${colors.primary}, ${colors.secondary})`;
+            document.querySelectorAll('.button').forEach(btn => {
+                btn.style.background = colors.primary;
+                btn.style.boxShadow = `0 0 10px ${colors.primary}`;
+            });
+            userData[currentUser].siteTheme = theme;
+            saveUserData();
+            playSound('click');
+            addActivity("changed the site theme");
+            addNotification(`You switched to the ${theme} theme!`);
         }
 
         function updateDailyChallenge() {
@@ -1124,6 +1350,7 @@
             addXP(currentChallenge.xp);
             localStorage.setItem("challengeCompleted", "true");
             updateDailyChallenge();
+            addActivity("completed the daily challenge");
             addNotification(`You completed the daily challenge: ${currentChallenge.text}`);
         }
 
@@ -1143,6 +1370,7 @@
                 counter.innerText = target.reactions[emoji];
                 saveSiteData();
                 playSound('click');
+                addActivity("reacted to something");
                 addNotification(`You reacted with ${emoji}!`);
             }
         }
@@ -1159,7 +1387,7 @@
 
         function updateVisitorLog() {
             const list = document.getElementById("visitor-list");
-            list.innerHTML = userData[currentUser].visitors.map(v => `<li>${v}</li>`).join('');
+            list.innerHTML = userData[currentUser].visitors.map(v => `<li>${userData[v.split(' ')[0]]?.badge || ''}${v}</li>`).join('');
         }
 
         function toggleEmotePicker() {
@@ -1188,28 +1416,22 @@
             userData[creator].collabRequests = userData[creator].collabRequests || [];
             userData[creator].collabRequests.push({ project: projectTitle, requester: currentUser });
             saveUserData();
+            addActivity(`sent a collab request to ${creator}`);
             addNotification(`You sent a collab request for ${projectTitle} to ${creator}!`);
             alert("Collaboration request sent! (Simulated)");
             userData[creator].notifications.unshift(`${new Date().toLocaleString()}: ${currentUser} requested to collab on ${projectTitle}`);
             saveUserData();
         }
 
-        function setSiteTheme(theme) {
-            let colors;
-            switch (theme) {
-                case 'fire': colors = { primary: '#ff4040', secondary: '#ff9900', bg: '#121212' }; break;
-                case 'ice': colors = { primary: '#40c4ff', secondary: '#b3e5fc', bg: '#e0f7fa' }; break;
-                case 'neon': colors = { primary: '#00e676', secondary: '#ffea00', bg: '#0d1b2a' }; break;
-            }
-            document.body.style.background = `linear-gradient(45deg, ${colors.bg}, ${colors.primary}, ${colors.secondary})`;
-            document.querySelectorAll('.button').forEach(btn => {
-                btn.style.background = colors.primary;
-                btn.style.boxShadow = `0 0 10px ${colors.primary}`;
-            });
-            userData[currentUser].siteTheme = theme;
-            saveUserData();
-            playSound('click');
-            addNotification(`You switched to the ${theme} theme!`);
+        function addActivity(message) {
+            siteData.activity.unshift(`${currentUser} ${message} at ${new Date().toLocaleString()}`);
+            if (siteData.activity.length > 10) siteData.activity.pop();
+            saveSiteData();
+            updateActivityFeed();
+        }
+
+        function updateActivityFeed() {
+            document.getElementById("activity-list").innerHTML = siteData.activity.map(a => `<li>${userData[a.split(' ')[0]]?.badge || ''}${a}</li>`).join('');
         }
 
         function ensureUserData(username) {
@@ -1229,7 +1451,9 @@
                 projectsCreated: userData[username].projectsCreated || 0,
                 blogPosts: userData[username].blogPosts || 0,
                 history: userData[username].history || [],
-                isBanned: userData[username].isBanned || false
+                isBanned: userData[username].isBanned || false,
+                customFanfare: userData[username].customFanfare || 'https://www.myinstants.com/media/sounds/fanfare.mp3',
+                badge: userData[username].badge || ''
             };
             saveUserData();
         }
