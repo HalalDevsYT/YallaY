@@ -113,7 +113,7 @@
             color: white;
         }
 
-        .hidden { display: none; }
+        .hidden { display: none !important; }
 
         #leaderboard, #projects, #chat, #updates, #blog, #contact, #owner-tools {
             margin: 20px auto;
@@ -219,7 +219,6 @@
         .reactions button { padding: 5px; font-size: 12px; background: none; border: none; cursor: pointer; }
         #achievements-wall { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
         
-        /* Enhanced Login/Register Styles */
         #auth-container {
             position: relative;
             overflow: hidden;
@@ -285,7 +284,7 @@
         }
         main {
             padding-top: 120px; /* Adjusted for header */
-            min-height: calc(100vh - 120px); /* Ensure content fills viewport */
+            min-height: calc(100vh - 120px);
         }
         @media (max-width: 600px) {
             header { flex-wrap: wrap; padding: 10px; }
@@ -533,12 +532,12 @@
         let siteData = JSON.parse(localStorage.getItem('siteData')) || {
             chatMessages: [],
             projects: [
-                { title: "Laser Tag", desc: "An roblox game i made but also there is an website!", category: "Games", creator: "Halaldeveloper", collab: false, reactions: { '👍': 0, '🔥': 0 } },
-                { title: "SparkAt", desc: "A blazing-fast AI chat igniting creativity and conversation!", category: "AI", creator: "Halaldeveloper", collab: false, reactions: { '👍': 0, '🔥': 0 } }
+                { title: "Laser Tag", desc: "A Roblox game with a website!", category: "Games", creator: "Halaldeveloper", collab: false, reactions: { '👍': 0, '🔥': 0 } },
+                { title: "SparkAt", desc: "Fast AI chat for creativity!", category: "AI", creator: "Halaldeveloper", collab: false, reactions: { '👍': 0, '🔥': 0 } }
             ],
             blogPosts: [
-                { title: "My Journey as YallaY", content: "Started creating amazing projects—stay tuned for more updates!", creator: "Halaldeveloper", comments: [], reactions: { '👍': 0, '🔥': 0 } },
-                { title: "Future Ideas", content: "Thinking about a new game or app—let me know what you think!", creator: "Halaldeveloper", comments: [], reactions: { '👍': 0, '🔥': 0 } }
+                { title: "My Journey as YallaY", content: "Started creating projects—stay tuned!", creator: "Halaldeveloper", comments: [], reactions: { '👍': 0, '🔥': 0 } },
+                { title: "Future Ideas", content: "Thinking about new games/apps—what do you think?", creator: "Halaldeveloper", comments: [], reactions: { '👍': 0, '🔥': 0 } }
             ],
             activeUsers: 0,
             activity: []
@@ -593,72 +592,45 @@
             if (localStorage.getItem('rememberedUsername')) {
                 document.getElementById("auth-username").value = localStorage.getItem('rememberedUsername');
             }
-            showPage('home'); // Start on home page
+            showPage('home');
         };
 
         function showPage(pageId) {
-            console.log(`Attempting to show page: ${pageId}`);
+            console.log(`[DEBUG] Attempting to show page: ${pageId}`);
+            const pages = document.querySelectorAll('#content > .container, #content > section');
+            console.log(`[DEBUG] Found ${pages.length} pages:`, Array.from(pages).map(p => p.id));
 
-            // Get all top-level elements in main
-            const pages = document.querySelectorAll('#content > *');
-            console.log(`Found ${pages.length} pages:`, Array.from(pages).map(p => p.id));
-
-            // Hide all pages
             pages.forEach(page => {
                 page.classList.add('hidden');
-                console.log(`Hid page: ${page.id}`);
+                console.log(`[DEBUG] Hid page: ${page.id}`);
             });
 
-            // Show the target page
             const targetPage = document.getElementById(pageId);
             if (targetPage) {
                 targetPage.classList.remove('hidden');
-                console.log(`Showed page: ${pageId}`);
+                console.log(`[DEBUG] Showed page: ${pageId}`);
             } else {
-                console.error(`Page "${pageId}" not found, reverting to home`);
+                console.error(`[ERROR] Page not found: ${pageId}, reverting to 'home'`);
                 document.getElementById('home').classList.remove('hidden');
                 return;
             }
 
-            // Additional visibility for home-specific sections
-            if (isLoggedIn && pageId === 'home') {
-                ['leaderboard', 'chat', 'updates'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) {
-                        el.classList.remove('hidden');
-                        console.log(`Showed additional section: ${id}`);
-                    }
-                });
-            } else {
-                ['leaderboard', 'chat', 'updates'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) {
-                        el.classList.add('hidden');
-                        console.log(`Hid additional section: ${id}`);
-                    }
-                });
-            }
-
-            // Clean up welcome message
             const welcomeMessage = document.getElementById("welcome-message");
             if (welcomeMessage) {
                 welcomeMessage.remove();
-                console.log("Removed welcome message");
+                console.log("[DEBUG] Removed welcome message");
             }
 
-            // Update UI
             updateMusicButton();
-            console.log("Updated music button");
+            updateUI();
 
-            // Load page-specific content
             if (pageId === 'profile') logProfileVisitor();
             if (pageId === 'projects') loadProjects();
             if (pageId === 'blog') loadBlogPosts();
             if (pageId === 'chat') loadChatMessages();
 
-            // Reset scroll
             window.scrollTo(0, 0);
-            console.log("Scroll reset to top");
+            console.log("[DEBUG] Scroll reset to top");
         }
 
         let isLoginMode = true;
@@ -958,7 +930,6 @@
                     const challenge = JSON.parse(localStorage.getItem("dailyChallenge"));
                     if (challenge?.action === "chat") localStorage.setItem("challengeCompleted", "true");
                     updateDailyChallenge();
-                    // Handle mentions
                     const mentions = formattedMessage.match(/@(\w+)/g);
                     if (mentions) {
                         mentions.forEach(mention => {
@@ -1463,17 +1434,6 @@
             alert("Collaboration request sent! (Simulated)");
             userData[creator].notifications.unshift(`${new Date().toLocaleString()}: ${currentUser} requested to collab on ${projectTitle}`);
             saveUserData();
-        }
-
-        function addActivity(message) {
-            siteData.activity.unshift(`${currentUser} ${message} at ${new Date().toLocaleString()}`);
-            if (siteData.activity.length > 10) siteData.activity.pop();
-            saveSiteData();
-            updateActivityFeed();
-        }
-
-        function updateActivityFeed() {
-            document.getElementById("activity-list").innerHTML = siteData.activity.map(a => `<li>${userData[a.split(' ')[0]]?.badge || ''}${a}</li>`).join('');
         }
 
         function ensureUserData(username) {
