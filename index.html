@@ -1,1706 +1,511 @@
 <!DOCTYPE html>
-
-2	2	
 <html lang="en">
-3	3	
 <head>
-4	4	
     <meta charset="UTF-8">
-5	5	
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-6	6	
     <title>YallaY</title>
-7	7	
     <link rel="icon" href="YallaYIcon.png" type="image/png">
-8	8	
     <style>
-9	9	
         body {
-10	10	
             font-family: 'Orbitron', sans-serif;
-11	11	
             margin: 0;
-12	12	
             padding: 0;
-13	13	
-            background: linear-gradient(45deg, #121212, #ff4040, #ff9900);
-14	14	
-            background-size: 400% 400%;
-15	15	
-            animation: gradientBG 15s ease infinite;
-16	16	
-            color: white;
-17	17	
+            background: linear-gradient(135deg, #1a1a1a, #ff4040, #ff9900);
+            background-size: 300% 300%;
+            animation: gradientBG 10s ease infinite;
+            color: #fff;
             text-align: center;
-18	18	
-            transition: all 0.3s;
-19	19	
+            overflow-x: hidden;
         }
-20	20	
 
-21	21	
         @keyframes gradientBG {
-22	22	
-            0% { background-position: 0% 50%; }
-23	23	
-            50% { background-position: 100% 50%; }
-24	24	
-            100% { background-position: 0% 50%; }
-25	25	
+            0% { background-position: 0% 0%; }
+            50% { background-position: 100% 100%; }
+            100% { background-position: 0% 0%; }
         }
-26	26	
 
-27	27	
-        .light-mode { background: white; color: black; }
-28	28	
-        .yalla-orange { background: #300; color: #ff9900; }
-29	29	
-        .preview_1, .preview_2 {
-30	30	
-            max-width: 100%;
-31	31	
-            height: auto;
-32	32	
-            width: 300px;
-33	33	
-            display: block;
-34	34	
-            margin: 10px auto;
-35	35	
-        }
-36	36	
-
-37	37	
         header {
-38	38	
-            background: rgba(0, 0, 0, 0.8);
-39	39	
-            padding: 20px;
-40	40	
-            display: flex;
-41	41	
-            align-items: center;
-42	42	
-            justify-content: space-between;
-43	43	
-            box-shadow: 0 0 20px #ff4040;
-44	+
-            position: fixed; /* Fixed on mobile */
-45	+
+            position: fixed;
             top: 0;
-46	+
             width: 100%;
-47	+
+            background: rgba(0, 0, 0, 0.85);
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 15px rgba(255, 64, 64, 0.5);
             z-index: 1000;
-44	48	
         }
-45	49	
 
-46	50	
         header img {
-
-@@ -53,7 +57,13 @@
-53	57	
-
-54	58	
-        header img:hover { transform: scale(1.1); box-shadow: 0 0 15px #ff4040; }
-55	59	
-
-56		-
-        header h1 { margin: 0; flex-grow: 1; text-align: left; padding-left: 20px; }
-60	+
-        header h1 { 
-61	+
-            margin: 0; 
-62	+
-            flex-grow: 1; 
-63	+
-            text-align: left; 
-64	+
-            padding-left: 20px; 
-65	+
-            font-size: 1.5em; 
-66	+
+            height: 80px;
+            cursor: pointer;
+            transition: transform 0.2s;
         }
-57	67	
 
-58	68	
-        .search-bar {
-59	69	
+        header img:hover { transform: scale(1.1); }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.5em;
+            text-align: left;
+            padding-left: 15px;
+            flex-grow: 1;
+        }
+
+        .button {
+            padding: 10px 20px;
+            background: #ff4040;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+            transition: background 0.3s, transform 0.2s;
+            box-shadow: 0 2px 10px rgba(255, 64, 64, 0.5);
+        }
+
+        .button:hover {
+            background: #e63939;
+            transform: scale(1.05);
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 140px auto 20px;
+            padding: 20px;
+            background: rgba(40, 40, 40, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(255, 64, 64, 0.3);
+        }
+
+        .hidden { display: none; }
+
+        .input-field {
+            width: 100%;
             padding: 10px;
+            margin: 10px 0;
+            border: 2px solid #ff4040;
+            border-radius: 5px;
+            background: #333;
+            color: #fff;
+            font-size: 14px;
+        }
 
+        #chat-box {
+            height: 200px;
+            overflow-y: auto;
+            background: #222;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
 
-@@ -213,6 +223,13 @@
-213	223	
-        #particles-js { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
-214	224	
-        .reactions { margin-left: 10px; }
-215	225	
-        .reactions button { padding: 5px; font-size: 12px; background: none; border: none; cursor: pointer; }
-226	+
-        #achievements-wall { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
-227	+
+        .project-card, .blog-post {
+            background: #333;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 2px solid #ff4040;
+            transition: transform 0.3s;
+        }
+
+        .project-card:hover, .blog-post:hover { transform: scale(1.03); }
+
+        #music-player {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(40, 40, 40, 0.9);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(255, 64, 64, 0.5);
+        }
+
         @media (max-width: 600px) {
-228	+
-            header { flex-wrap: wrap; padding: 10px; }
-229	+
+            header { padding: 10px; flex-wrap: wrap; }
             header img { height: 60px; }
-230	+
-            .search-bar { width: 100%; margin-top: 10px; }
-231	+
-            main { margin-top: 120px; } /* Space for fixed header */
-232	+
+            .container { margin-top: 120px; }
+            .button { font-size: 12px; padding: 8px 16px; }
         }
-216	233	
     </style>
-217	234	
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-218	235	
-    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-
-@@ -226,7 +243,7 @@
-226	243	
+</head>
+<body>
+    <header>
+        <div>
             <img src="YallaYIcon.png" alt="YallaY Icon" onclick="showPage('home')">
-227	244	
             <h1>YallaY</h1>
-228	245	
         </div>
-229		-
-        <input type="text" class="search-bar" id="search-bar" placeholder="Search projects or players..." onkeyup="searchProjectsAndPlayers()">
-246	+
-        <input type="text" class="search-bar" id="search-bar" placeholder="Search projects or players..." onkeypress="if(event.key === 'Enter') searchProjectsAndPlayers()">
-230	247	
-        <button class="button" onclick="toggleNotifications()" style="padding: 10px;">🔔 <span id="notification-count">0</span></button>
-231	248	
-        <div id="notifications" class="container hidden" style="position: absolute; right: 20px; top: 80px; width: 300px; max-height: 300px; overflow-y: auto;">
-232	249	
+        <button class="button" onclick="toggleNotifications()">🔔 <span id="notification-count">0</span></button>
+        <div id="notifications" class="container hidden" style="position: absolute; right: 10px; top: 70px; width: 250px; max-height: 300px; overflow-y: auto;">
             <h3>Notifications</h3>
+            <div id="notification-list"></div>
+        </div>
+    </header>
 
-@@ -238,7 +255,6 @@
-238	255	
-        <section id="home">
-239	256	
-            <h2>Welcome to YallaY’s World!</h2>
-240	257	
-            <p>Live Visitors: <span id="visitor-count">0</span></p>
-241		-
-            <!-- Feature 1: Daily Challenge -->
-242	258	
-            <div id="daily-challenge" class="container">
-243	259	
-                <h3>Daily Challenge</h3>
-244	260	
-                <p id="challenge-text">Loading...</p>
+    <main id="content">
+        <div id="home" class="container">
+            <h2>Welcome to YallaY</h2>
+            <p>Visitors: <span id="visitor-count">0</span></p>
+            <div id="activity-feed">
+                <h3>Activity Feed</h3>
+                <ul id="activity-list"></ul>
+            </div>
+            <button class="button" id="login-btn" onclick="showPage('auth')">Login</button>
+            <button class="button" id="register-btn" onclick="showPage('auth'); toggleAuthMode()">Register</button>
+            <button class="button hidden" id="profile-btn" onclick="showPage('profile')">Profile</button>
+            <button class="button" id="projects-btn" onclick="showPage('projects')">Projects</button>
+            <button class="button" id="blog-btn" onclick="showPage('blog')">Blog</button>
+            <button class="button" id="chat-btn" onclick="showPage('chat')">Chat</button>
+            <button class="button" id="settings-btn" onclick="showPage('settings')">Settings</button>
+            <button class="button hidden" id="logout-btn" onclick="logout()">Logout</button>
+        </div>
 
+        <div id="auth" class="container hidden">
+            <h2 id="auth-title">Login</h2>
+            <input type="text" id="auth-username" class="input-field" placeholder="Username">
+            <input type="password" id="auth-password" class="input-field" placeholder="Password">
+            <button class="button" id="auth-submit" onclick="authSubmit()">Login</button>
+            <p><a href="#" id="auth-toggle" onclick="toggleAuthMode()" style="color: #ff9900;">Register instead</a></p>
+            <button class="button" onclick="showPage('home')">Back</button>
+        </div>
 
-@@ -279,17 +295,14 @@
-279	295	
-            <button class="button" onclick="updateAvatar()">Update Avatar</button>
-280	296	
-            <textarea id="bio" class="input-field" placeholder="Your bio..."></textarea>
-281	297	
+        <div id="profile" class="container hidden">
+            <h2>Profile</h2>
+            <p><span id="user-name">User</span> <span id="user-badge"></span></p>
+            <input type="text" id="bio" class="input-field" placeholder="Your bio...">
             <button class="button" onclick="updateBio()">Save Bio</button>
-282		-
-            <!-- Feature 2: User Status -->
-283	298	
-            <input type="text" id="user-status" class="input-field" placeholder="Set your status (max 20 chars)" maxlength="20">
-284	299	
-            <button class="button" onclick="updateStatus()">Update Status</button>
-285	300	
-            <p>Level: <span id="user-level">1</span> (XP: <span id="user-xp">0</span>)</p>
-286	301	
-            <p>Projects Created: <span id="projects-created">0</span></p>
-287	302	
-            <p>Blog Posts Written: <span id="blog-posts">0</span></p>
-288	303	
-            <button class="button" onclick="showFollowers()">Followers: <span id="follower-count">0</span></button>
-289		-
-            <div id="achievements"></div>
-290		-
-            <!-- Profile Stats Graph -->
-304	+
-            <div id="achievements-wall"></div>
-291	305	
-            <canvas id="stats-graph" width="300" height="150"></canvas>
-292		-
-            <!-- Feature 4: Profile Visitor Log -->
-293	306	
-            <div id="visitor-log">
-294	307	
-                <h3>Recent Visitors</h3>
-295	308	
-                <ul id="visitor-list"></ul>
-
-@@ -305,9 +318,12 @@
-305	318	
-            <button class="button" onclick="setTheme('yalla-orange')">Yalla Orange</button>
-306	319	
-            <input type="color" id="profile-color" class="input-field" value="#ff4040">
-307	320	
-            <button class="button" onclick="setProfileTheme()">Set Profile Theme</button>
-308		-
-            <!-- Sound Effect Toggle -->
-309	321	
-            <input type="checkbox" id="sound-toggle" checked>
-310	322	
-            <label for="sound-toggle">Enable Sound Effects</label>
-323	+
-            <h4>Site Themes</h4>
-324	+
-            <button class="button" onclick="setSiteTheme('fire')">Fire</button>
-325	+
-            <button class="button" onclick="setSiteTheme('ice')">Ice</button>
-326	+
-            <button class="button" onclick="setSiteTheme('neon')">Neon</button>
-311	327	
-            <button class="button" onclick="showPage('home')">Back</button>
-312	328	
-        </div>
-313	329	
-
-
-@@ -319,21 +335,7 @@
-319	335	
-                <option value="AI">AI</option>
-320	336	
-                <option value="Other">Other</option>
-321	337	
+            <select id="badge-picker" class="input-field">
+                <option value="">No Badge</option>
+                <option value="⭐">Star</option>
+                <option value="⚡">Lightning</option>
+                <option value="🔥">Fire</option>
             </select>
-322		-
-            <div id="project-list">
-323		-
-                <div class="project-card" data-category="Games">
-324		-
-                    <h3>Laser Tag</h3>
-325		-
-                    <p>An roblox game i made but also there is an website!</p>
-326		-
-                    <button class="button" onclick="showProjectPreview('Project 1')">Preview</button>
-327		-
-                    <!-- Feature 3: Reaction Emojis -->
-328		-
-                    <span class="reactions"><button onclick="addReaction(this, '👍')">👍 <span>0</span></button><button onclick="addReaction(this, '🔥')">🔥 <span>0</span></button></span>
-329		-
-                </div>
-330		-
-                <div class="project-card" data-category="AI">
-331		-
-                    <h3>SparkAt</h3>
-332		-
-                    <p>A blazing-fast AI chat igniting creativity and conversation!</p>
-333		-
-                    <button class="button" onclick="showProjectPreview('Project 2')">Preview</button>
-334		-
-                    <span class="reactions"><button onclick="addReaction(this, '👍')">👍 <span>0</span></button><button onclick="addReaction(this, '🔥')">🔥 <span>0</span></button></span>
-335		-
-                </div>
-336		-
-            </div>
-338	+
+            <button class="button" onclick="setBadge()">Set Badge</button>
+            <button class="button" onclick="showPage('home')">Back</button>
+        </div>
+
+        <div id="projects" class="container hidden">
+            <h2>Projects</h2>
             <div id="project-list"></div>
-337	339	
-            <button class="button" onclick="showPage('new-project-form')">New Project</button>
-338	340	
+            <button class="button" onclick="showPage('new-project')">New Project</button>
             <button class="button" onclick="showPage('home')">Back</button>
-339	341	
         </div>
 
-@@ -350,28 +352,7 @@
-350	352	
+        <div id="new-project" class="container hidden">
+            <h2>New Project</h2>
+            <input type="text" id="project-title" class="input-field" placeholder="Title">
+            <textarea id="project-desc" class="input-field" placeholder="Description"></textarea>
+            <button class="button" onclick="submitProject()">Submit</button>
+            <button class="button" onclick="showPage('projects')">Cancel</button>
+        </div>
+
         <div id="blog" class="container hidden">
-351	353	
-            <h2>YallaY’s Blog</h2>
-352	354	
-            <button class="button" onclick="showPage('new-blog-form')">New Blog Post</button>
-353		-
-            <div id="blog-posts-list">
-354		-
-                <div class="blog-post">
-355		-
-                    <h3>My Journey as YallaY</h3>
-356		-
-                    <p>Started creating amazing projects—stay tuned for more updates!</p>
-357		-
-                    <div class="comments">
-358		-
-                        <input type="text" class="input-field comment-input" placeholder="Add a comment...">
-359		-
-                        <button class="button" onclick="addComment(this)">Comment</button>
-360		-
-                        <div class="comment-list"></div>
-361		-
-                    </div>
-362		-
-                    <span class="reactions"><button onclick="addReaction(this, '👍')">👍 <span>0</span></button><button onclick="addReaction(this, '🔥')">🔥 <span>0</span></button></span>
-363		-
-                </div>
-364		-
-                <div class="blog-post">
-365		-
-                    <h3>Future Ideas</h3>
-366		-
-                    <p>Thinking about a new game or app—let me know what you think!</p>
-367		-
-                    <div class="comments">
-368		-
-                        <input type="text" class="input-field comment-input" placeholder="Add a comment...">
-369		-
-                        <button class="button" onclick="addComment(this)">Comment</button>
-370		-
-                        <div class="comment-list"></div>
-371		-
-                    </div>
-372		-
-                    <span class="reactions"><button onclick="addReaction(this, '👍')">👍 <span>0</span></button><button onclick="addReaction(this, '🔥')">🔥 <span>0</span></button></span>
-373		-
-                </div>
-374		-
-            </div>
-355	+
-            <div id="blog-posts-list"></div>
-375	356	
+            <h2>Blog</h2>
+            <div id="blog-posts"></div>
+            <button class="button" onclick="showPage('new-blog')">New Post</button>
             <button class="button" onclick="showPage('home')">Back</button>
-376	357	
         </div>
-377	358	
-        <div id="new-blog-form" class="container hidden">
 
-@@ -393,15 +374,20 @@
-393	374	
-
-394	375	
-        <div id="leaderboard" class="hidden">
-395	376	
-            <h3>Top Creators</h3>
-396		-
-            <p>Top Creator: <span id="top-creator">N/A</span> - <span id="top-projects">0</span> Projects</p>
-377	+
-            <ul id="top-creators-list"></ul>
-397	378	
+        <div id="new-blog" class="container hidden">
+            <h2>New Blog Post</h2>
+            <input type="text" id="blog-title" class="input-field" placeholder="Title">
+            <textarea id="blog-content" class="input-field" placeholder="Content"></textarea>
+            <button class="button" onclick="submitBlogPost()">Submit</button>
+            <button class="button" onclick="showPage('blog')">Cancel</button>
         </div>
-398	379	
 
-399	380	
-        <div id="chat" class="hidden">
-400	381	
-            <h3>YallaY Chat</h3>
-401	382	
+        <div id="chat" class="container hidden">
+            <h2>Chat</h2>
             <div id="chat-box"></div>
-402	383	
-            <div id="typing-indicator" class="hidden">Someone is typing...</div>
-403	384	
-            <input type="text" id="chat-input" class="input-field" placeholder="Type a message... (:smile: for 😊)">
-385	+
-            <button class="button" onclick="toggleEmotePicker()" style="padding: 10px;">😊</button>
-404	386	
+            <input type="text" id="chat-input" class="input-field" placeholder="Type a message... (@username to mention)">
             <button class="button" onclick="sendChat()">Send</button>
-387	+
-            <div id="emote-picker" class="container hidden" style="position: absolute; bottom: 80px; right: 20px; width: 200px;">
-388	+
-                <h3>Emotes</h3>
-389	+
-                <div id="emote-list" style="display: flex; flex-wrap: wrap; gap: 5px;"></div>
-390	+
-            </div>
-405	391	
+            <button class="button" onclick="showPage('home')">Back</button>
         </div>
-406	392	
 
-407	393	
-        <div id="updates" class="hidden">
+        <div id="settings" class="container hidden">
+            <h2>Settings</h2>
+            <h4>Custom Sounds</h4>
+            <select id="fanfare-sound" class="input-field">
+                <option value="fanfare.mp3">Default Fanfare</option>
+                <option value="custom">Custom</option>
+            </select>
+            <input type="text" id="custom-sound-url" class="input-field" placeholder="Custom Sound URL">
+            <button class="button" onclick="setCustomSound()">Set Sound</button>
+            <h4>Themes</h4>
+            <button class="button" onmouseover="previewTheme('dark')" onmouseout="resetTheme()" onclick="setTheme('dark')">Dark</button>
+            <button class="button" onmouseover="previewTheme('light')" onmouseout="resetTheme()" onclick="setTheme('light')">Light</button>
+            <button class="button" onmouseover="previewTheme('neon')" onmouseout="resetTheme()" onclick="setTheme('neon')">Neon</button>
+            <button class="button" onclick="showPage('home')">Back</button>
+        </div>
+    </main>
 
+    <audio id="click-sound" src="https://www.myinstants.com/media/sounds/button-click.mp3" preload="auto"></audio>
+    <audio id="fanfare-sound" src="https://www.myinstants.com/media/sounds/fanfare.mp3" preload="auto"></audio>
 
-@@ -452,19 +438,35 @@
-452	438	
-        let currentUser = localStorage.getItem('currentUser') || null;
-453	439	
-        let userData = JSON.parse(localStorage.getItem('userData')) || {};
-454	440	
-        let currentTheme = localStorage.getItem('userTheme') || 'dark';
-441	+
-        let siteData = JSON.parse(localStorage.getItem('siteData')) || {
-442	+
+    <script>
+        let isLoggedIn = false;
+        let currentUser = null;
+        let currentTheme = localStorage.getItem('theme') || 'dark';
+        let users = JSON.parse(localStorage.getItem('users')) || {};
+        let data = JSON.parse(localStorage.getItem('data')) || {
+            activity: [],
+            projects: [],
+            blogPosts: [],
             chatMessages: [],
-443	+
-            projects: [
-444	+
-                { title: "Laser Tag", desc: "An roblox game i made but also there is an website!", category: "Games", creator: "Halaldeveloper", collab: false, reactions: { '👍': 0, '🔥': 0 } },
-445	+
-                { title: "SparkAt", desc: "A blazing-fast AI chat igniting creativity and conversation!", category: "AI", creator: "Halaldeveloper", collab: false, reactions: { '👍': 0, '🔥': 0 } }
-446	+
-            ],
-447	+
-            blogPosts: [
-448	+
-                { title: "My Journey as YallaY", content: "Started creating amazing projects—stay tuned for more updates!", creator: "Halaldeveloper", comments: [], reactions: { '👍': 0, '🔥': 0 } },
-449	+
-                { title: "Future Ideas", content: "Thinking about a new game or app—let me know what you think!", creator: "Halaldeveloper", comments: [], reactions: { '👍': 0, '🔥': 0 } }
-450	+
-            ]
-451	+
+            visitors: 0
         };
-455	452	
-        const ownerUsername = "Halaldeveloper";
-456	453	
-        const fakeUsers = ["SparkAt", "LaserLad", "CodeMaster", "YallaFan"];
-457	454	
-        const challenges = [
-458	455	
-            { text: "Post a chat message", action: "chat", xp: 20 },
-459	456	
-            { text: "Create a project", action: "project", xp: 50 },
-460	457	
-            { text: "Write a blog post", action: "blog", xp: 30 }
-461	458	
-        ];
-459	+
-        const emotes = ['😊', '🔥', '🚀', '👍', '🎉', '🤓'];
-462	460	
 
-463	461	
-        const cursor = document.getElementById('cursor');
-464	462	
-        function updateCursor(e) {
-465	463	
-            cursor.style.left = e.pageX - 20 + 'px';
-466	464	
-            cursor.style.top = e.pageY - 20 + 'px';
-467	465	
-            cursor.style.display = 'block';
-466	+
-            if (userData[currentUser]?.cursorColor) {
-467	+
-                cursor.style.background = `${userData[currentUser].cursorColor} url('YallaYIcon.png') no-repeat center`;
-468	+
-                cursor.style.backgroundSize = 'contain';
-469	+
-            }
-468	470	
-        }
-469	471	
-        document.addEventListener('mousemove', updateCursor);
-470	472	
-        document.querySelectorAll('a, button').forEach(item => {
+        window.onload = () => {
+            isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            currentUser = localStorage.getItem('currentUser');
+            if (isLoggedIn && currentUser) updateUI();
+            loadData();
+            applyTheme();
+            showPage('home');
+            setInterval(updateVisitors, 5000);
+        };
 
-@@ -483,6 +485,7 @@
-483	485	
-                updateProfile(currentUser);
-484	486	
-                updateNotifications();
-485	487	
-            }
-488	+
-            loadSiteData();
-486	489	
-            particlesJS("particles-js", {
-487	490	
-                particles: { number: { value: 50 }, color: { value: "#ff4040" }, move: { speed: 2 } }
-488	491	
-            });
-
-@@ -509,6 +512,9 @@
-509	512	
-            document.body.appendChild(cursor);
-510	513	
-            document.addEventListener('mousemove', updateCursor);
-511	514	
-            if (page === 'profile') logProfileVisitor();
-515	+
-            if (page === 'projects') loadProjects();
-516	+
-            if (page === 'blog') loadBlogPosts();
-517	+
-            if (page === 'chat') loadChatMessages();
-512	518	
-        }
-513	519	
-
-514	520	
-        function login() {
-
-
-@@ -571,7 +577,10 @@
-571	577	
-                        notifications: [],
-572	578	
-                        profileTheme: '#ff4040',
-573	579	
-                        status: '',
-574		-
-                        visitors: []
-580	+
-                        visitors: [],
-581	+
-                        achieved: {},
-582	+
-                        collabRequests: [],
-583	+
-                        cursorColor: '#ff4040'
-575	584	
-                    };
-576	585	
-                    localStorage.setItem('userData', JSON.stringify(userData));
-577	586	
-                    playSound('fanfare');
-
-
-@@ -622,18 +631,42 @@
-622	631	
-            }
-623	632	
-            drawStatsGraph(username);
-624	633	
-            updateVisitorLog();
-634	+
-            if (userData[username].collabRequests && userData[username].collabRequests.length > 0) {
-635	+
-                const requestsDiv = document.createElement("div");
-636	+
-                requestsDiv.innerHTML = `<h3>Collab Requests</h3><ul>${userData[username].collabRequests.map(req => `<li>${req.requester} - ${req.project}</li>`).join('')}</ul>`;
-637	+
-                document.getElementById("profile").appendChild(requestsDiv);
-638	+
-            } else if (document.getElementById("profile").querySelector("h3")?.textContent === "Collab Requests") {
-639	+
-                document.getElementById("profile").removeChild(document.getElementById("profile").lastChild);
-640	+
-            }
-625	641	
-        }
-626	642	
-
-627	643	
-        function updateAchievements(username) {
-628		-
-            const achievementsDiv = document.getElementById("achievements");
-629		-
-            achievementsDiv.innerHTML = "";
-644	+
-            const achievementsWall = document.getElementById("achievements-wall");
-645	+
-            achievementsWall.innerHTML = "";
-630	646	
-            const projects = userData[username].projectsCreated;
-631	647	
-            const blogPosts = userData[username].blogPosts;
-632		-
-            if (projects >= 3) achievementsDiv.innerHTML += '<div class="achievement">🏆 Creator: 3+ Projects</div>';
-633		-
-            if (projects >= 5) achievementsDiv.innerHTML += '<div class="achievement">🔥 Mastermind: 5+ Projects</div>';
-634		-
-            if (blogPosts >= 3) achievementsDiv.innerHTML += '<div class="achievement">📝 Blogger: 3+ Posts</div>';
-635		-
-            if (blogPosts >= 5) achievementsDiv.innerHTML += '<div class="achievement">🌟 Storyteller: 5+ Posts</div>';
-636		-
-            if (achievementsDiv.innerHTML) playSound('fanfare');
-648	+
-            const achievements = [
-649	+
-                { name: "Creator", desc: "3+ Projects", icon: "🏆", req: projects >= 3 },
-650	+
-                { name: "Mastermind", desc: "5+ Projects", icon: "🔥", req: projects >= 5 },
-651	+
-                { name: "Blogger", desc: "3+ Posts", icon: "📝", req: blogPosts >= 3 },
-652	+
-                { name: "Storyteller", desc: "5+ Posts", icon: "🌟", req: blogPosts >= 5 }
-653	+
-            ];
-654	+
-            userData[username].achieved = userData[username].achieved || {};
-655	+
-            achievements.forEach(ach => {
-656	+
-                if (ach.req && !userData[username].achieved[ach.name]) {
-657	+
-                    userData[username].achieved[ach.name] = new Date().toLocaleString();
-658	+
-                    saveUserData();
-659	+
-                    addNotification(`Achievement Unlocked: ${ach.name}!`);
-660	+
-                }
-661	+
-                const unlocked = userData[username].achieved[ach.name];
-662	+
-                achievementsWall.innerHTML += `
-663	+
-                    <div class="achievement" style="opacity: ${unlocked ? 1 : 0.5};">
-664	+
-                        <h4>${ach.icon} ${ach.name}</h4>
-665	+
-                        <p>${ach.desc}</p>
-666	+
-                        <p>${unlocked ? `Unlocked: ${unlocked}` : "Locked"}</p>
-667	+
-                    </div>`;
-668	+
-            });
-669	+
-            if (Object.keys(userData[username].achieved).length > 0) playSound('fanfare');
-637	670	
-        }
-638	671	
-
-639	672	
-        function setTheme(theme) {
-
-
-@@ -662,66 +695,96 @@
-662	695	
-        }
-663	696	
-
-664	697	
-        function updateLeaderboard() {
-665		-
-            let topCreator = "N/A";
-666		-
-            let topProjects = 0;
-667		-
-            for (let user in userData) {
-668		-
-                if (userData[user].projectsCreated > topProjects) {
-669		-
-                    topProjects = userData[user].projectsCreated;
-670		-
-                    topCreator = user;
-671		-
-                }
-672		-
-            }
-673		-
-            document.getElementById("top-creator").innerText = topCreator;
-674		-
-            document.getElementById("top-projects").innerText = topProjects;
-698	+
-            const topCreators = Object.entries(userData)
-699	+
-                .sort((a, b) => b[1].projectsCreated - a[1].projectsCreated)
-700	+
-                .slice(0, 5);
-701	+
-            document.getElementById("top-creators-list").innerHTML = topCreators.map(([user, data]) => 
-702	+
-                `<li>${user} - Projects: ${data.projectsCreated} - XP: ${data.xp || 0} - Followers: ${data.followers.length}</li>`
-703	+
-            ).join('');
-675	704	
-        }
-676	705	
-
-677	706	
-        function searchProjectsAndPlayers() {
-678		-
-            const query = document.getElementById("search-bar").value.toLowerCase();
-679		-
-            if (query && isLoggedIn) {
-680		-
-                const projects = document.querySelectorAll('.project-card');
-681		-
-                projects.forEach(project => {
-682		-
-                    const title = project.querySelector('h3').innerText.toLowerCase();
-683		-
-                    project.classList.toggle('hidden', !title.includes(query));
-684		-
-                });
-685		-
-                const playerResults = Object.keys(userData).filter(username => 
-686		-
-                    username.toLowerCase().includes(query) && username !== currentUser
-687		-
-                );
-688		-
-                const projectList = document.getElementById("project-list");
-689		-
-                const existingResults = document.getElementById("player-search-results");
-690		-
-                if (existingResults) existingResults.remove();
-691		-
-                if (playerResults.length > 0) {
-692		-
-                    const resultsDiv = document.createElement("div");
-693		-
-                    resultsDiv.id = "player-search-results";
-694		-
-                    resultsDiv.innerHTML = "<h3>Players Found</h3>" + playerResults.map(user => 
-695		-
-                        `<div class="project-card"><h3>${user}${userData[user].status ? ` (${userData[user].status})` : ''}</h3><p>Projects: ${userData[user].projectsCreated}</p><button class="button" onclick="followUser('${user}')">Follow</button></div>`
-696		-
-                    ).join('');
-697		-
-                    projectList.appendChild(resultsDiv);
-698		-
-                }
-707	+
-            const query = document.getElementById("search-bar").value.toLowerCase().trim();
-708	+
-            if (!isLoggedIn || !query) return;
-709	+
-            const projects = document.querySelectorAll('.project-card');
-710	+
-            projects.forEach(project => {
-711	+
-                const title = project.querySelector('h3').innerText.toLowerCase();
-712	+
-                project.classList.toggle('hidden', !title.includes(query));
-713	+
-            });
-714	+
-            const playerResults = Object.keys(userData).filter(username => 
-715	+
-                username.toLowerCase().includes(query) && username !== currentUser
-716	+
-            );
-717	+
-            const projectList = document.getElementById("project-list");
-718	+
-            const existingResults = document.getElementById("player-search-results");
-719	+
-            if (existingResults) existingResults.remove();
-720	+
-            if (playerResults.length > 0) {
-721	+
-                const resultsDiv = document.createElement("div");
-722	+
-                resultsDiv.id = "player-search-results";
-723	+
-                resultsDiv.innerHTML = "<h3>Players Found</h3>" + playerResults.map(user => 
-724	+
-                    `<div class="project-card"><h3>${user}${userData[user].status ? ` (${userData[user].status})` : ''}</h3><p>Projects: ${userData[user].projectsCreated}</p><button class="button" onclick="followUser('${user}')">Follow</button></div>`
-725	+
-                ).join('');
-726	+
-                projectList.appendChild(resultsDiv);
-699	727	
-            }
-700	728	
-        }
-701	729	
-
-730	+
-        function loadChatMessages() {
-731	+
-            const chatBox = document.getElementById("chat-box");
-732	+
-            chatBox.innerHTML = siteData.chatMessages.map(msg => 
-733	+
-                `<p><b>${msg.user}</b>${userData[msg.user]?.status ? ` (${userData[msg.user].status})` : ''} [${msg.timestamp}]: ${msg.text} <span class="reactions"><button onclick="addReaction(this, '👍')">👍 <span>${msg.reactions['👍'] || 0}</span></button><button onclick="addReaction(this, '🔥')">🔥 <span>${msg.reactions['🔥'] || 0}</span></button></span></p>`
-734	+
-            ).join('');
-735	+
-            chatBox.scrollTop = chatBox.scrollHeight;
-736	+
-        }
-737	+
-702	738	
-        function sendChat() {
-703		-
-            const message = document.getElementById("chat-input").value;
-739	+
-            const message = document.getElementById("chat-input").value.trim();
-704	740	
-            if (message && isLoggedIn) {
-705	741	
-                document.getElementById("typing-indicator").classList.remove("hidden");
-706	742	
-                setTimeout(() => {
-707	743	
-                    document.getElementById("typing-indicator").classList.add("hidden");
-708	744	
-                    const timestamp = new Date().toLocaleString();
-709	745	
-                    const formattedMessage = message.replace(':smile:', '😊').replace(':fire:', '🔥');
-710		-
-                    const status = userData[currentUser].status ? ` (${userData[currentUser].status})` : "";
-711		-
-                    document.getElementById("chat-box").innerHTML += `<p><b>${currentUser}</b>${status} [${timestamp}]: ${formattedMessage} <span class="reactions"><button onclick="addReaction(this, '👍')">👍 <span>0</span></button><button onclick="addReaction(this, '🔥')">🔥 <span>0</span></button></span></p>`;
-746	+
-                    const chatMessage = { user: currentUser, timestamp, text: formattedMessage, reactions: { '👍': 0, '🔥': 0 } };
-747	+
-                    siteData.chatMessages.push(chatMessage);
-748	+
-                    saveSiteData();
-749	+
-                    loadChatMessages();
-712	750	
-                    document.getElementById("chat-input").value = "";
-713	751	
-                    addXP(5);
-714	752	
-                    playSound('click');
-715		-
-                    const chatBox = document.getElementById("chat-box");
-716		-
-                    chatBox.scrollTop = chatBox.scrollHeight;
-717	753	
-                    addNotification("You sent a chat message!");
-718	754	
-                    const challenge = JSON.parse(localStorage.getItem("dailyChallenge"));
-719		-
-                    if (challenge.action === "chat") localStorage.setItem("challengeCompleted", "true");
-755	+
-                    if (challenge?.action === "chat") localStorage.setItem("challengeCompleted", "true");
-720	756	
-                    updateDailyChallenge();
-721	757	
-                }, 1000);
-722	758	
-            }
-723	759	
-        }
-724	760	
-
-761	+
-        function loadProjects() {
-762	+
-            const projectList = document.getElementById("project-list");
-763	+
-            projectList.innerHTML = siteData.projects.map(project => `
-764	+
-                <div class="project-card" data-title="${project.title}" data-category="${project.category}">
-765	+
-                    <h3>${project.title}</h3>
-766	+
-                    <p>${project.desc}${project.collab ? ' <span style="color: #ff9900">[Open for Collab]</span>' : ''}</p>
-767	+
-                    <button class="button" onclick="showProjectPreview('${project.title}')">Preview</button>
-768	+
-                    ${project.collab ? `<button class="button" onclick="messageCreator('${project.creator}')">Message</button><button class="button" onclick="requestCollab('${project.title}', '${project.creator}')">Request Collab</button>` : ''}
-769	+
-                    <span class="reactions"><button onclick="addReaction(this, '👍')">👍 <span>${project.reactions['👍'] || 0}</span></button><button onclick="addReaction(this, '🔥')">🔥 <span>${project.reactions['🔥'] || 0}</span></button></span>
-770	+
-                </div>`).join('');
-771	+
-        }
-772	+
-773	+
-        function loadBlogPosts() {
-774	+
-            const blogList = document.getElementById("blog-posts-list");
-775	+
-            blogList.innerHTML = siteData.blogPosts.map(post => `
-776	+
-                <div class="blog-post">
-777	+
-                    <h3>${post.title}</h3>
-778	+
-                    <p>${post.content}</p>
-779	+
-                    <div class="comments">
-780	+
-                        <input type="text" class="input-field comment-input" placeholder="Add a comment...">
-781	+
-                        <button class="button" onclick="addComment(this, '${post.title}')">Comment</button>
-782	+
-                        <div class="comment-list">${post.comments.map(c => `<p><b>${c.user}</b>: ${c.text}</p>`).join('')}</div>
-783	+
-                    </div>
-784	+
-                    <span class="reactions"><button onclick="addReaction(this, '👍')">👍 <span>${post.reactions['👍'] || 0}</span></button><button onclick="addReaction(this, '🔥')">🔥 <span>${post.reactions['🔥'] || 0}</span></button></span>
-785	+
-                </div>`).join('');
-786	+
-        }
-787	+
-725	788	
-        function updateUpdates(username) {
-726	789	
-            const updateList = document.getElementById("update-list");
-727	790	
-            updateList.innerHTML = userData[username].history.map(update => `<p>${update}</p>`).join('');
-
-@@ -741,20 +804,16 @@
-741	804	
-            alert("Stats refreshed! (Simulated)");
-742	805	
-        }
-743	806	
-
-744		-
-        function showProjectPreview(projectName) {
-745		-
-            const previewContent = document.getElementById("preview-content");
-746		-
-            if (projectName === "Project 1") {
-747		-
-                previewContent.innerHTML = `<p>Laser Tag Preview</p><img src="Preview_1.png" class="preview_1" alt="Project 1 Preview">`;
-748		-
-            } else if (projectName === "Project 2") {
-749		-
-                previewContent.innerHTML = `<p>SparkAt Preview: Meet SparkAt, a next-gen AI chat that ignites your imagination with lightning-fast responses and a fiery passion for conversation!</p><img src="Preview_2.png" class="preview_2" alt="Project 2 Preview">`;
-750		-
-            } else {
-751		-
-                const projectCard = document.querySelector(`.project-card[data-title="${projectName}"]`);
-752		-
-                if (projectCard) {
-753		-
-                    const desc = projectCard.querySelector('p').innerText;
-754		-
-                    previewContent.innerHTML = `<p>${projectName} Preview</p><p>${desc}</p><p>(No image available)</p>`;
-755		-
-                }
-807	+
-        function showProjectPreview(projectTitle) {
-808	+
-            const project = siteData.projects.find(p => p.title === projectTitle);
-809	+
-            if (project) {
-810	+
-                document.getElementById("preview-content").innerHTML = `
-811	+
-                    <p>${project.title} Preview</p>
-812	+
-                    <p>${project.desc}</p>
-813	+
-                    ${project.title === "Laser Tag" ? '<img src="Preview_1.png" class="preview_1" alt="Laser Tag Preview">' : 
-814	+
-                     project.title === "SparkAt" ? '<img src="Preview_2.png" class="preview_2" alt="SparkAt Preview">' : '<p>(No image available)</p>'}`;
-815	+
-                showPage('project-preview');
-756	816	
-            }
-757		-
-            showPage('project-preview');
-758	817	
-        }
-759	818	
-
-760	819	
-        function hideProjectPreview() {
-
-@@ -763,44 +822,48 @@
-763	822	
-        }
-764	823	
-
-765	824	
-        function sendContactMessage() {
-766		-
-            const message = document.getElementById("contact-message").value;
-825	+
-            const message = document.getElementById("contact-message").value.trim();
-767	826	
-            if (message && isLoggedIn) {
-768	827	
-                playSound('fanfare');
-769	828	
-                alert("Message sent to YallaY! (Simulated)");
-770	829	
-                document.getElementById("contact-message").value = "";
-771	830	
-                addNotification("You sent a contact message!");
-772		-
-            } else {
-773		-
-                alert("Please log in and enter a message.");
-831	+
-            } else if (!isLoggedIn) {
-832	+
-                alert("Please log in to send a message.");
-774	833	
-            }
-775	834	
-        }
-776	835	
-
-777	836	
-        function updateAvatar() {
-778		-
-            const url = document.getElementById("avatar-url").value;
-837	+
-            const url = document.getElementById("avatar-url").value.trim();
-779	838	
-            userData[currentUser].avatar = url || 'default-avatar.png';
-780	839	
-            document.getElementById("avatar-display").src = userData[currentUser].avatar;
-781	840	
-            saveUserData();
-782	841	
-            playSound('click');
-783	842	
-            addNotification("You updated your avatar!");
-784	843	
-        }
-844	+
-785	845	
-        function updateBio() {
-786	846	
-            userData[currentUser].bio = document.getElementById("bio").value;
-787	847	
-            saveUserData();
-788	848	
-            playSound('click');
-789	849	
-            addNotification("You updated your bio!");
-790	850	
-        }
-851	+
-791	852	
-        function updateLevel() {
-792	853	
-            const xp = userData[currentUser].xp || 0;
-793	854	
-            const level = Math.floor(xp / 100) + 1;
-794	855	
-            document.getElementById("user-xp").innerText = xp;
-795	856	
-            document.getElementById("user-level").innerText = level;
-796	857	
-        }
-858	+
-797	859	
-        function addXP(points) {
-798	860	
-            userData[currentUser].xp = (userData[currentUser].xp || 0) + points;
-799	861	
-            saveUserData();
-800	862	
-            updateLevel();
-801	863	
-        }
-864	+
-802	865	
-        function updateStatus() {
-803		-
-            const status = document.getElementById("user-status").value;
-866	+
-            const status = document.getElementById("user-status").value.trim();
-804	867	
-            userData[currentUser].status = status;
-805	868	
-            saveUserData();
-806	869	
-            playSound('click');
-
-@@ -815,11 +878,11 @@
-815	878	
-            const projects = userData[username].projectsCreated || 0;
-816	879	
-            const blogs = userData[username].blogPosts || 0;
-817	880	
-            ctx.fillStyle = "#ff4040";
-818		-
-            ctx.fillRect(20, 150 - xp / 2, 50, xp / 2); // XP bar
-881	+
-            ctx.fillRect(20, 150 - xp / 2, 50, xp / 2);
-819	882	
-            ctx.fillStyle = "#ff9900";
-820		-
-            ctx.fillRect(100, 150 - projects * 10, 50, projects * 10); // Projects bar
-883	+
-            ctx.fillRect(100, 150 - projects * 10, 50, projects * 10);
-821	884	
-            ctx.fillStyle = "#cc3333";
-822		-
-            ctx.fillRect(180, 150 - blogs * 10, 50, blogs * 10); // Blogs bar
-885	+
-            ctx.fillRect(180, 150 - blogs * 10, 50, blogs * 10);
-823	886	
-            ctx.fillStyle = "white";
-824	887	
-            ctx.font = "12px Orbitron";
-825	888	
-            ctx.fillText("XP", 30, 140);
-
-@@ -828,38 +891,40 @@
-828	891	
-        }
-829	892	
-
-830	893	
-        function submitProject() {
-831		-
-            const title = document.getElementById("project-title").value;
-832		-
-            const desc = document.getElementById("project-desc").value;
-894	+
-            const title = document.getElementById("project-title").value.trim();
-895	+
-            const desc = document.getElementById("project-desc").value.trim();
-833	896	
-            const collab = document.getElementById("collab-open").checked;
-834	897	
-            if (title && desc && isLoggedIn) {
-835	898	
-                userData[currentUser].projectsCreated++;
-836	899	
-                addXP(50);
-837	900	
-                const category = prompt("Enter project category (Games, AI, Other):") || "Other";
-838		-
-                const projectHTML = `
-839		-
-                    <div class="project-card" data-title="${title}" data-category="${category}">
-840		-
-                        <h3>${title}</h3>
-841		-
-                        <p>${desc}${collab ? ' <span style="color: #ff9900">[Open for Collab]</span>' : ''}</p>
-842		-
-                        <button class="button" onclick="showProjectPreview('${title}')">Preview</button>
-843		-
-                        ${collab ? `<button class="button" onclick="messageCreator('${currentUser}')">Message</button>` : ''}
-844		-
-                        <span class="reactions"><button onclick="addReaction(this, '👍')">👍 <span>0</span></button><button onclick="addReaction(this, '🔥')">🔥 <span>0</span></button></span>
-845		-
-                    </div>`;
-846		-
-                document.getElementById("project-list").innerHTML += projectHTML;
-901	+
-                const project = {
-902	+
-                    title,
-903	+
-                    desc,
-904	+
-                    category,
-905	+
-                    creator: currentUser,
-906	+
-                    collab,
-907	+
-                    reactions: { '👍': 0, '🔥': 0 }
-908	+
-                };
-909	+
-                siteData.projects.push(project);
-910	+
-                saveSiteData();
-847	911	
-                addNotification(`You created a new project: ${title}`);
-848		-
-                saveUserData();
-849	912	
-                playSound('fanfare');
-850	913	
-                const challenge = JSON.parse(localStorage.getItem("dailyChallenge"));
-851		-
-                if (challenge.action === "project") localStorage.setItem("challengeCompleted", "true");
-914	+
-                if (challenge?.action === "project") localStorage.setItem("challengeCompleted", "true");
-852	915	
-                updateDailyChallenge();
-853	916	
-                showPage('projects');
-854	917	
-            }
-855	918	
-        }
-919	+
-856	920	
-        function messageCreator(username) {
-857	921	
-            const message = prompt(`Send a message to ${username}:`);
-858	922	
-            if (message) {
-859	923	
-                alert(`Message sent to ${username}: "${message}" (Simulated)`);
-860	924	
-                addNotification(`You messaged ${username}!`);
-861	925	
-            }
-862	926	
-        }
-927	+
-863	928	
-        function filterProjects() {
-864	929	
-            const filter = document.getElementById("project-filter").value;
-865	930	
-            document.querySelectorAll('.project-card').forEach(card => {
-
-@@ -868,42 +933,41 @@
-868	933	
-            });
-869	934	
-        }
-870	935	
-
-871		-
-        function addComment(button) {
-936	+
-        function addComment(button, blogTitle) {
-872	937	
-            const input = button.previousElementSibling;
-873		-
-            const comment = input.value;
-938	+
-            const comment = input.value.trim();
-874	939	
-            if (comment && isLoggedIn) {
-875		-
-                const commentList = button.nextElementSibling;
-876		-
-                commentList.innerHTML += `<p><b>${currentUser}</b>: ${comment}</p>`;
-877		-
-                input.value = "";
-878		-
-                addXP(10);
-879		-
-                playSound('click');
-880		-
-                addNotification("You added a comment!");
-940	+
-                const blogPost = siteData.blogPosts.find(post => post.title === blogTitle);
-941	+
-                if (blogPost) {
-942	+
-                    blogPost.comments.push({ user: currentUser, text: comment });
-943	+
-                    saveSiteData();
-944	+
-                    loadBlogPosts();
-945	+
-                    addXP(10);
-946	+
-                    playSound('click');
-947	+
-                    addNotification("You added a comment!");
-948	+
-                }
-881	949	
-            }
-882	950	
-        }
-883	951	
-
-884	952	
-        function submitBlogPost() {
-885		-
-            const title = document.getElementById("blog-title").value;
-886		-
-            const content = document.getElementById("blog-content").value;
-953	+
-            const title = document.getElementById("blog-title").value.trim();
-954	+
-            const content = document.getElementById("blog-content").value.trim();
-887	955	
-            if (title && content && isLoggedIn) {
-888	956	
-                userData[currentUser].blogPosts++;
-889	957	
-                addXP(20);
-890		-
-                const blogHTML = `
-891		-
-                    <div class="blog-post">
-892		-
-                        <h3>${title}</h3>
-893		-
-                        <p>${content}</p>
-894		-
-                        <div class="comments">
-895		-
-                            <input type="text" class="input-field comment-input" placeholder="Add a comment...">
-896		-
-                            <button class="button" onclick="addComment(this)">Comment</button>
-897		-
-                            <div class="comment-list"></div>
-898		-
-                        </div>
-899		-
-                        <span class="reactions"><button onclick="addReaction(this, '👍')">👍 <span>0</span></button><button onclick="addReaction(this, '🔥')">🔥 <span>0</span></button></span>
-900		-
-                    </div>`;
-901		-
-                document.getElementById("blog-posts-list").innerHTML += blogHTML;
-958	+
-                const blogPost = {
-959	+
-                    title,
-960	+
-                    content,
-961	+
-                    creator: currentUser,
-962	+
-                    comments: [],
-963	+
-                    reactions: { '👍': 0, '🔥': 0 }
-964	+
-                };
-965	+
-                siteData.blogPosts.push(blogPost);
-966	+
-                saveSiteData();
-902	967	
-                addNotification(`You posted a new blog: ${title}`);
-903		-
-                saveUserData();
-904	968	
-                playSound('fanfare');
-905	969	
-                const challenge = JSON.parse(localStorage.getItem("dailyChallenge"));
-906		-
-                if (challenge.action === "blog") localStorage.setItem("challengeCompleted", "true");
-970	+
-                if (challenge?.action === "blog") localStorage.setItem("challengeCompleted", "true");
-907	971	
-                updateDailyChallenge();
-908	972	
-                showPage('blog');
-909	973	
-            }
-
-@@ -918,6 +982,7 @@
-918	982	
-                addNotification(`You followed ${targetUser}!`);
-919	983	
-            }
-920	984	
-        }
-985	+
-921	986	
-        function showFollowers() {
-922	987	
-            alert(`Followers: ${userData[currentUser].followers.join(", ") || "None"}`);
-923	988	
-        }
-
-@@ -927,7 +992,7 @@
-927	992	
-                alert("Only the owner can ban users.");
-928	993	
-                return;
-929	994	
-            }
-930		-
-            const username = document.getElementById("ban-username").value;
-995	+
-            const username = document.getElementById("ban-username").value.trim();
-931	996	
-            if (username && userData[username] && username !== ownerUsername) {
-932	997	
-                userData[username].isBanned = true;
-933	998	
-                saveUserData();
-
-@@ -938,12 +1003,13 @@
-938	1003	
-                addNotification(`You banned ${username}!`);
-939	1004	
-            }
-940	1005	
-        }
-1006	+
-941	1007	
-        function unbanUser() {
-942	1008	
-            if (currentUser !== ownerUsername) {
-943	1009	
-                alert("Only the owner can unban users.");
-944	1010	
-                return;
-945	1011	
-            }
-946		-
-            const username = document.getElementById("unban-username").value;
-1012	+
-            const username = document.getElementById("unban-username").value.trim();
-947	1013	
-            if (username && userData[username]) {
-948	1014	
-                userData[username].isBanned = false;
-949	1015	
-                saveUserData();
-
-@@ -954,6 +1020,7 @@
-954	1020	
-                addNotification(`You unbanned ${username}!`);
-955	1021	
-            }
-956	1022	
-        }
-1023	+
-957	1024	
-        function updateUserManagement() {
-958	1025	
-            const userList = document.getElementById("user-list");
-959	1026	
-            userList.innerHTML = Object.keys(userData).map(user => `
-
-@@ -963,6 +1030,7 @@
-963	1030	
-                </div>
-964	1031	
-            `).join('');
-965	1032	
-        }
-1033	+
-966	1034	
-        function toggleBan(user) {
-967	1035	
-            userData[user].isBanned = !userData[user].isBanned;
-968	1036	
-            saveUserData();
-
-
-@@ -1061,9 +1129,22 @@
-1061	1129	
-
-1062	1130	
-        function addReaction(button, emoji) {
-1063	1131	
-            const counter = button.querySelector("span");
-1064		-
-            counter.innerText = parseInt(counter.innerText) + 1;
-1065		-
-            playSound('click');
-1066		-
-            addNotification(`You reacted with ${emoji}!`);
-1132	+
-            const parent = button.closest('.project-card') || button.closest('.blog-post') || button.closest('p');
-1133	+
-            let target;
-1134	+
-            if (parent.classList.contains('project-card')) {
-1135	+
-                target = siteData.projects.find(p => p.title === parent.dataset.title);
-1136	+
-            } else if (parent.classList.contains('blog-post')) {
-1137	+
-                target = siteData.blogPosts.find(p => p.title === parent.querySelector('h3').innerText);
-1138	+
-            } else {
-1139	+
-                target = siteData.chatMessages.find(m => m.timestamp === parent.textContent.match(/\[(.*?)\]/)[1]);
-1140	+
-            }
-1141	+
+        function showPage(pageId) {
+            const pages = document.querySelectorAll('#content > div');
+            pages.forEach(page => page.classList.add('hidden'));
+            const target = document.getElementById(pageId);
             if (target) {
-1142	+
-                target.reactions[emoji] = (target.reactions[emoji] || 0) + 1;
-1143	+
-                counter.innerText = target.reactions[emoji];
-1144	+
-                saveSiteData();
-1145	+
-                playSound('click');
-1146	+
-                addNotification(`You reacted with ${emoji}!`);
-1147	+
+                target.classList.remove('hidden');
+                updateUI();
+                loadPageContent(pageId);
+            } else {
+                console.error(`Page ${pageId} not found!`);
+                document.getElementById('home').classList.remove('hidden');
             }
-1067	1148	
         }
-1068	1149	
 
-1069	1150	
-        function logProfileVisitor() {
+        function updateUI() {
+            document.getElementById('login-btn').classList.toggle('hidden', isLoggedIn);
+            document.getElementById('register-btn').classList.toggle('hidden', isLoggedIn);
+            document.getElementById('profile-btn').classList.toggle('hidden', !isLoggedIn);
+            document.getElementById('logout-btn').classList.toggle('hidden', !isLoggedIn);
+        }
 
-@@ -1081,6 +1162,56 @@
-1081	1162	
-            list.innerHTML = userData[currentUser].visitors.map(v => `<li>${v}</li>`).join('');
-1082	1163	
-        }
-1083	1164	
-
-1165	+
-        function toggleEmotePicker() {
-1166	+
-            const picker = document.getElementById("emote-picker");
-1167	+
-            picker.classList.toggle("hidden");
-1168	+
-            if (!picker.classList.contains("hidden")) {
-1169	+
-                const list = document.getElementById("emote-list");
-1170	+
-                list.innerHTML = emotes.map(emote => 
-1171	+
-                    `<button style="font-size: 20px; padding: 5px;" onclick="addEmote('${emote}')">${emote}</button>`
-1172	+
-                ).join('');
-1173	+
-            }
-1174	+
-        }
-1175	+
-1176	+
-        function addEmote(emote) {
-1177	+
-            const input = document.getElementById("chat-input");
-1178	+
-            input.value += emote;
-1179	+
-            document.getElementById("emote-picker").classList.add("hidden");
-1180	+
-            input.focus();
-1181	+
-        }
-1182	+
-1183	+
-        function requestCollab(projectTitle, creator) {
-1184	+
-            if (currentUser === creator) {
-1185	+
-                alert("You can't request to collab on your own project!");
-1186	+
+        function authSubmit() {
+            const username = document.getElementById('auth-username').value.trim();
+            const password = document.getElementById('auth-password').value;
+            if (!username || !password) {
+                alert("Please enter both username and password!");
                 return;
-1187	+
             }
-1188	+
-            userData[creator].collabRequests = userData[creator].collabRequests || [];
-1189	+
-            userData[creator].collabRequests.push({ project: projectTitle, requester: currentUser });
-1190	+
-            saveUserData();
-1191	+
-            addNotification(`You sent a collab request for ${projectTitle} to ${creator}!`);
-1192	+
-            alert("Collaboration request sent! (Simulated)");
-1193	+
-            userData[creator].notifications.unshift(`${new Date().toLocaleString()}: ${currentUser} requested to collab on ${projectTitle}`);
-1194	+
-            saveUserData();
-1195	+
+
+            if (isLoginMode) {
+                if (users[username] && users[username].password === password) {
+                    currentUser = username;
+                    isLoggedIn = true;
+                    localStorage.setItem('isLoggedIn', 'true');
+                    localStorage.setItem('currentUser', username);
+                    playSound('fanfare');
+                    addActivity(`${username} logged in`);
+                    showPage('home');
+                } else {
+                    alert("Invalid credentials!");
+                }
+            } else {
+                if (users[username]) {
+                    alert("Username already taken!");
+                } else {
+                    users[username] = { password, badge: '', bio: '', projects: 0, posts: 0 };
+                    localStorage.setItem('users', JSON.stringify(users));
+                    playSound('fanfare');
+                    alert("Registered! Please login.");
+                    toggleAuthMode();
+                }
+            }
         }
-1196	+
-1197	+
-        function setSiteTheme(theme) {
-1198	+
-            let colors;
-1199	+
-            switch (theme) {
-1200	+
-                case 'fire': colors = { primary: '#ff4040', secondary: '#ff9900', bg: '#121212' }; break;
-1201	+
-                case 'ice': colors = { primary: '#40c4ff', secondary: '#b3e5fc', bg: '#e0f7fa' }; break;
-1202	+
-                case 'neon': colors = { primary: '#00e676', secondary: '#ffea00', bg: '#0d1b2a' }; break;
-1203	+
-            }
-1204	+
-            document.body.style.background = `linear-gradient(45deg, ${colors.bg}, ${colors.primary}, ${colors.secondary})`;
-1205	+
-            document.querySelectorAll('.button').forEach(btn => {
-1206	+
-                btn.style.background = colors.primary;
-1207	+
-                btn.style.boxShadow = `0 0 10px ${colors.primary}`;
-1208	+
-            });
-1209	+
-            userData[currentUser].siteTheme = theme;
-1210	+
-            saveUserData();
-1211	+
+
+        function toggleAuthMode() {
+            isLoginMode = !isLoginMode;
+            document.getElementById('auth-title').innerText = isLoginMode ? 'Login' : 'Register';
+            document.getElementById('auth-submit').innerText = isLoginMode ? 'Login' : 'Register';
+            document.getElementById('auth-toggle').innerText = isLoginMode ? 'Register instead' : 'Login instead';
+            document.getElementById('auth-username').value = '';
+            document.getElementById('auth-password').value = '';
+        }
+
+        function logout() {
+            isLoggedIn = false;
+            currentUser = null;
+            localStorage.setItem('isLoggedIn', 'false');
+            localStorage.removeItem('currentUser');
             playSound('click');
-1212	+
-            addNotification(`You switched to the ${theme} theme!`);
-1213	+
+            addActivity("Logged out");
+            showPage('home');
         }
-1214	+
-1084	1215	
-        function ensureUserData(username) {
-1085	1216	
-            userData[username] = {
-1086	1217	
-                ...userData[username],
 
-@@ -1091,32 +1222,55 @@
-1091	1222	
-                notifications: userData[username].notifications || [],
-1092	1223	
-                profileTheme: userData[username].profileTheme || '#ff4040',
-1093	1224	
-                status: userData[username].status || '',
-1094		-
-                visitors: userData[username].visitors || []
-1225	+
-                visitors: userData[username].visitors || [],
-1226	+
-                achieved: userData[username].achieved || {},
-1227	+
-                collabRequests: userData[username].collabRequests || [],
-1228	+
-                cursorColor: userData[username].cursorColor || '#ff4040',
-1229	+
-                projectsCreated: userData[username].projectsCreated || 0,
-1230	+
-                blogPosts: userData[username].blogPosts || 0,
-1231	+
-                history: userData[username].history || [],
-1232	+
-                isBanned: userData[username].isBanned || false
-1095	1233	
-            };
-1096	1234	
-            saveUserData();
-1097	1235	
+        function updateBio() {
+            users[currentUser].bio = document.getElementById('bio').value;
+            localStorage.setItem('users', JSON.stringify(users));
+            playSound('click');
+            addActivity("Updated bio");
         }
-1098	1236	
 
-1237	+
-        function saveSiteData() {
-1238	+
-            localStorage.setItem('siteData', JSON.stringify(siteData));
-1239	+
+        function setBadge() {
+            const badge = document.getElementById('badge-picker').value;
+            users[currentUser].badge = badge;
+            localStorage.setItem('users', JSON.stringify(users));
+            playSound('click');
+            addActivity(`Set badge to ${badge || 'None'}`);
+            document.getElementById('user-badge').innerText = badge;
         }
-1240	+
-1241	+
-        function loadSiteData() {
-1242	+
-            loadProjects();
-1243	+
-            loadBlogPosts();
-1244	+
-            loadChatMessages();
-1245	+
-        }
-1246	+
-1099	1247	
-        function saveSettings() {
-1100	1248	
-            localStorage.setItem('userTheme', currentTheme);
-1101	1249	
-        }
-1250	+
-1102	1251	
-        function saveUserData() {
-1103	1252	
-            localStorage.setItem('userData', JSON.stringify(userData));
-1104	1253	
-        }
-1254	+
-1105	1255	
-        function saveLoginState() {
-1106	1256	
-            localStorage.setItem('isLoggedIn', isLoggedIn);
-1107	1257	
-            localStorage.setItem('currentUser', currentUser);
-1108	1258	
-            saveSettings();
-1109	1259	
-        }
-1260	+
-1110	1261	
-        function applySavedSettings() {
-1111	1262	
-            const savedTheme = localStorage.getItem('userTheme');
-1112	1263	
-            if (savedTheme) {
-1113	1264	
-                document.body.className = '';
-1114	1265	
-                if (savedTheme !== 'dark') document.body.classList.add(savedTheme);
-1115	1266	
-                currentTheme = savedTheme;
-1116	1267	
+
+        function submitProject() {
+            const title = document.getElementById('project-title').value.trim();
+            const desc = document.getElementById('project-desc').value.trim();
+            if (title && desc) {
+                users[currentUser].projects = (users[currentUser].projects || 0) + 1;
+                data.projects.push({ title, desc, creator: currentUser });
+                localStorage.setItem('users', JSON.stringify(users));
+                localStorage.setItem('data', JSON.stringify(data));
+                playSound('fanfare');
+                addActivity("Created a project");
+                showPage('projects');
             }
-1268	+
-            if (userData[currentUser]?.siteTheme) setSiteTheme(userData[currentUser].siteTheme);
-1117	1269	
         }
-1270	+
-1118	1271	
-        window.addEventListener('beforeunload', () => {
-1119	1272	
-            saveLoginState();
-1273	+
-            saveSiteData();
-1120	1274	
-        });
-1121	1275	
+
+        function submitBlogPost() {
+            const title = document.getElementById('blog-title').value.trim();
+            const content = document.getElementById('blog-content').value.trim();
+            if (title && content) {
+                users[currentUser].posts = (users[currentUser].posts || 0) + 1;
+                data.blogPosts.push({ title, content, creator: currentUser });
+                localStorage.setItem('users', JSON.stringify(users));
+                localStorage.setItem('data', JSON.stringify(data));
+                playSound('fanfare');
+                addActivity("Posted a blog");
+                showPage('blog');
+            }
+        }
+
+        function sendChat() {
+            const message = document.getElementById('chat-input').value.trim();
+            if (message) {
+                const timestamp = new Date().toLocaleString();
+                data.chatMessages.push({ user: currentUser, text: message, timestamp });
+                localStorage.setItem('data', JSON.stringify(data));
+                loadPageContent('chat');
+                document.getElementById('chat-input').value = '';
+                playSound('click');
+                addActivity("Sent a chat message");
+                const mentions = message.match(/@(\w+)/g);
+                if (mentions) {
+                    mentions.forEach(m => {
+                        const user = m.slice(1);
+                        if (users[user]) addActivity(`${currentUser} mentioned ${user}`);
+                    });
+                }
+            }
+        }
+
+        function setCustomSound() {
+            const sound = document.getElementById('fanfare-sound').value;
+            const url = document.getElementById('custom-sound-url').value.trim();
+            users[currentUser].fanfare = sound === 'custom' && url ? url : 'https://www.myinstants.com/media/sounds/fanfare.mp3';
+            localStorage.setItem('users', JSON.stringify(users));
+            playSound('fanfare');
+            addActivity("Updated sound");
+        }
+
+        function playSound(type) {
+            const clickSound = document.getElementById('click-sound');
+            const fanfareSound = document.getElementById('fanfare-sound');
+            if (type === 'click') {
+                clickSound.currentTime = 0;
+                clickSound.play();
+            } else {
+                fanfareSound.src = users[currentUser]?.fanfare || 'https://www.myinstants.com/media/sounds/fanfare.mp3';
+                fanfareSound.currentTime = 0;
+                fanfareSound.play();
+            }
+        }
+
+        function previewTheme(theme) {
+            const themes = {
+                dark: 'linear-gradient(135deg, #1a1a1a, #ff4040, #ff9900)',
+                light: 'linear-gradient(135deg, #f0f0f0, #fff, #ddd)',
+                neon: 'linear-gradient(135deg, #0d1b2a, #00e676, #ffea00)'
+            };
+            document.body.style.background = themes[theme];
+        }
+
+        function setTheme(theme) {
+            currentTheme = theme;
+            applyTheme();
+            localStorage.setItem('theme', theme);
+            playSound('click');
+            addActivity(`Set theme to ${theme}`);
+        }
+
+        function resetTheme() {
+            applyTheme();
+        }
+
+        function applyTheme() {
+            const themes = {
+                dark: 'linear-gradient(135deg, #1a1a1a, #ff4040, #ff9900)',
+                light: 'linear-gradient(135deg, #f0f0f0, #fff, #ddd)',
+                neon: 'linear-gradient(135deg, #0d1b2a, #00e676, #ffea00)'
+            };
+            document.body.style.background = themes[currentTheme];
+            document.body.style.color = currentTheme === 'light' ? '#000' : '#fff';
+        }
+
+        function loadPageContent(pageId) {
+            if (pageId === 'profile' && currentUser) {
+                document.getElementById('user-name').innerText = currentUser;
+                document.getElementById('user-badge').innerText = users[currentUser].badge || '';
+                document.getElementById('bio').value = users[currentUser].bio || '';
+            } else if (pageId === 'projects') {
+                document.getElementById('project-list').innerHTML = data.projects.map(p => `
+                    <div class="project-card">
+                        <h3>${p.title}</h3>
+                        <p>${p.desc}</p>
+                    </div>`).join('');
+            } else if (pageId === 'blog') {
+                document.getElementById('blog-posts').innerHTML = data.blogPosts.map(p => `
+                    <div class="blog-post">
+                        <h3>${p.title}</h3>
+                        <p>${p.content}</p>
+                    </div>`).join('');
+            } else if (pageId === 'chat') {
+                document.getElementById('chat-box').innerHTML = data.chatMessages.map(m => `
+                    <p><b>${users[m.user]?.badge || ''}${m.user}</b> [${m.timestamp}]: ${m.text}</p>`).join('');
+            }
+        }
+
+        function loadData() {
+            loadPageContent('projects');
+            loadPageContent('blog');
+            loadPageContent('chat');
+            document.getElementById('activity-list').innerHTML = data.activity.map(a => `<li>${a}</li>`).join('');
+            document.getElementById('visitor-count').innerText = data.visitors;
+        }
+
+        function addActivity(message) {
+            data.activity.unshift(message);
+            if (data.activity.length > 10) data.activity.pop();
+            localStorage.setItem('data', JSON.stringify(data));
+            document.getElementById('activity-list').innerHTML = data.activity.map(a => `<li>${a}</li>`).join('');
+        }
+
+        function updateVisitors() {
+            data.visitors = data.visitors + Math.floor(Math.random() * 3) - 1;
+            data.visitors = Math.max(0, data.visitors);
+            localStorage.setItem('data', JSON.stringify(data));
+            document.getElementById('visitor-count').innerText = data.visitors;
+        }
+
+        function toggleNotifications() {
+            document.getElementById('notifications').classList.toggle('hidden');
+        }
     </script>
-1122	1276	
 </body>
+</html>
