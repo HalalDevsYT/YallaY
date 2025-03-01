@@ -285,7 +285,7 @@
         }
         main {
             padding-top: 150px; /* Fixed header space */
-            min-height: calc(100vh - 150px); /* Prevent collapse */
+            min-height: calc(100vh - 150px); /* Ensure content fills viewport */
         }
         @media (max-width: 600px) {
             header { flex-wrap: wrap; padding: 10px; }
@@ -315,7 +315,7 @@
     </header>
     
     <main id="content">
-        <section id="home">
+        <section id="home" class="container">
             <h2>Welcome to YallaY’s World!</h2>
             <p>Live Visitors: <span id="visitor-count">0</span></p>
             <div id="daily-challenge" class="container">
@@ -464,12 +464,12 @@
             <button class="button" onclick="showPage('home')">Back</button>
         </div>
 
-        <div id="leaderboard" class="hidden">
+        <div id="leaderboard" class="container hidden">
             <h3>Top Creators</h3>
             <ul id="top-creators-list"></ul>
         </div>
 
-        <div id="chat" class="hidden">
+        <div id="chat" class="container hidden">
             <h3>YallaY Chat</h3>
             <div id="chat-box"></div>
             <div id="typing-indicator" class="hidden">Someone is typing...</div>
@@ -482,7 +482,7 @@
             </div>
         </div>
 
-        <div id="updates" class="hidden">
+        <div id="updates" class="container hidden">
             <h3>Recent Updates</h3>
             <div id="update-list">
                 <p>Feb 24, 2025: Launched the YallaY website—check it out!</p>
@@ -593,30 +593,53 @@
             if (localStorage.getItem('rememberedUsername')) {
                 document.getElementById("auth-username").value = localStorage.getItem('rememberedUsername');
             }
+            showPage('home'); // Ensure home loads by default
         };
 
-        function showPage(page) {
-            document.querySelectorAll("main section, .container").forEach(section => {
-                section.classList.add("hidden");
+        function showPage(pageId) {
+            // Select all sections and containers within main
+            const sections = document.querySelectorAll('#content > *');
+            sections.forEach(section => {
+                section.classList.add('hidden');
             });
-            document.getElementById(page).classList.remove("hidden");
-            if (isLoggedIn && page === 'home') {
+
+            // Show the requested page
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.remove('hidden');
+            } else {
+                console.error(`Page with ID "${pageId}" not found!`);
+                showPage('home'); // Fallback to home if page not found
+                return;
+            }
+
+            // Additional visibility logic
+            if (isLoggedIn && pageId === 'home') {
                 document.getElementById('leaderboard').classList.remove('hidden');
                 document.getElementById('chat').classList.remove('hidden');
                 document.getElementById('updates').classList.remove('hidden');
             } else {
+                document.getElementById('leaderboard').classList.add('hidden');
                 document.getElementById('chat').classList.add('hidden');
                 document.getElementById('updates').classList.add('hidden');
             }
-            document.getElementById("welcome-message")?.remove();
+
+            // Remove welcome message if present
+            const welcomeMessage = document.getElementById("welcome-message");
+            if (welcomeMessage) welcomeMessage.remove();
+
+            // Update UI elements
             updateMusicButton();
-            document.body.appendChild(cursor);
-            document.addEventListener('mousemove', updateCursor);
-            if (page === 'profile') logProfileVisitor();
-            if (page === 'projects') loadProjects();
-            if (page === 'blog') loadBlogPosts();
-            if (page === 'chat') loadChatMessages();
-            window.scrollTo(0, 0); // Reset scroll to fix shift
+            document.body.appendChild(cursor); // Ensure cursor stays in DOM
+            
+            // Load content for specific pages
+            if (pageId === 'profile') logProfileVisitor();
+            if (pageId === 'projects') loadProjects();
+            if (pageId === 'blog') loadBlogPosts();
+            if (pageId === 'chat') loadChatMessages();
+
+            // Reset scroll position
+            window.scrollTo(0, 0);
         }
 
         let isLoginMode = true;
